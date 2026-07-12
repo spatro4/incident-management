@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: 'Nunito', system-ui, sans-serif;
+  background: radial-gradient(circle at top left, #eef6ff, #fdf0ff 45%, #fff8ec 100%);
+  min-height: 100vh;
+}
+
+.font-display {
+  font-family: 'Baloo 2', system-ui, sans-serif;
+}
+
+/* Chunky playful button base */
+.btn-chunky {
+  @apply font-display font-bold rounded-2xl shadow-chunky active:shadow-none active:translate-y-1.5 transition-all duration-150 select-none;
+}
+
+.card-playful {
+  @apply bg-white/90 backdrop-blur rounded-3xl border-4 border-white shadow-pop;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #c4b5fd;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
