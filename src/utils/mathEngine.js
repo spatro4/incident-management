@@ -1459,6 +1459,141 @@ function genCompetitionProblems(difficulty = 'medium') {
   }
 }
 
+function genNumberTheoryPuzzles(difficulty = 'medium') {
+  if (difficulty === 'hard') {
+    const pairs = [[4, 6], [3, 4], [2, 9], [4, 10], [3, 5], [6, 8]]
+    const [a, b] = pick(pairs)
+    const lcm = (a * b) / gcd(a, b)
+    const multiplier = randInt(2, Math.max(2, Math.floor(99 / lcm)))
+    const n = lcm * multiplier
+    const { choices, answer } = mcqFrom(n, () => n + pick([-lcm, lcm, -a, a]))
+    return {
+      subtopicId: 'number-theory-puzzles',
+      type: 'mcq',
+      prompt: `I am a 2-digit number divisible by both ${a} and ${b}. Which of these could I be?`,
+      choices,
+      answer,
+      hint: `Any number divisible by both ${a} and ${b} must be divisible by their LCM, which is ${lcm}.`,
+    }
+  }
+  if (difficulty === 'medium') {
+    const divisor = pick([3, 9])
+    const digits = randInt(2, 4)
+    const n = randInt(Math.pow(10, digits - 1), Math.pow(10, digits) - 1)
+    const digitSum = String(n).split('').reduce((s, d) => s + Number(d), 0)
+    const divisible = digitSum % divisor === 0
+    const { choices, answer } = mcqFrom(divisible ? 'Yes' : 'No', () => (divisible ? 'No' : 'Yes'), (v) => v)
+    return {
+      subtopicId: 'number-theory-puzzles',
+      type: 'mcq',
+      prompt: `Is ${n} divisible by ${divisor}? (Hint: add up its digits first!)`,
+      choices,
+      answer,
+      hint: `A number is divisible by ${divisor} if the sum of its digits is divisible by ${divisor}. ${n}'s digits add up to ${digitSum}.`,
+    }
+  }
+  const divisor = pick([2, 5, 10])
+  const n = randInt(10, 999)
+  const divisible = n % divisor === 0
+  const { choices, answer } = mcqFrom(divisible ? 'Yes' : 'No', () => (divisible ? 'No' : 'Yes'), (v) => v)
+  return {
+    subtopicId: 'number-theory-puzzles',
+    type: 'mcq',
+    prompt: `Is ${n} divisible by ${divisor}?`,
+    choices,
+    answer,
+    hint:
+      divisor === 10
+        ? `A number is divisible by 10 if it ends in 0.`
+        : divisor === 5
+          ? `A number is divisible by 5 if it ends in 0 or 5.`
+          : `A number is divisible by 2 if its last digit is even.`,
+  }
+}
+
+function genGeometrySpatial(difficulty = 'medium') {
+  if (difficulty === 'easy') {
+    const rows = randInt(2, 4)
+    const cols = randInt(2, 4)
+    const total = rows * cols
+    const { choices, answer } = mcqFrom(total, () => total + pick([-2, -1, 1, 2]))
+    return {
+      subtopicId: 'geometry-spatial',
+      type: 'mcq',
+      prompt: `A rectangle is divided into a grid of ${rows} rows and ${cols} columns of equal small squares. How many small squares are there in total?`,
+      choices,
+      answer,
+      hint: `Multiply the number of rows by the number of columns (${rows} × ${cols}).`,
+    }
+  }
+  if (difficulty === 'hard') {
+    const folds = randInt(3, 5)
+    const layers = Math.pow(2, folds)
+    const { choices, answer } = mcqFrom(layers, () => layers + pick([-4, -2, 2, 4]))
+    return {
+      subtopicId: 'geometry-spatial',
+      type: 'mcq',
+      prompt: `A piece of paper is folded in half ${folds} times. How many layers thick is it now?`,
+      choices,
+      answer,
+      hint: `Each fold doubles the number of layers. Start at 1 layer and double it ${folds} times.`,
+    }
+  }
+  const vLines = randInt(1, 3)
+  const hLines = randInt(1, 3)
+  const total = (vLines + 1) * (hLines + 1)
+  const { choices, answer } = mcqFrom(total, () => total + pick([-2, -1, 1, 2]))
+  return {
+    subtopicId: 'geometry-spatial',
+    type: 'mcq',
+    prompt: `A rectangle is divided by ${vLines} evenly spaced vertical line(s) and ${hLines} evenly spaced horizontal line(s), splitting it into smaller equal rectangles. How many small rectangles are formed in total?`,
+    choices,
+    answer,
+    hint: `The lines create (${vLines} + 1) columns and (${hLines} + 1) rows. Multiply them together.`,
+  }
+}
+
+function genCombinatoricsCounting(difficulty = 'medium') {
+  if (difficulty === 'hard') {
+    const digits = shuffle([1, 2, 3, 4, 5]).slice(0, randInt(3, 4))
+    const count = digits.length * (digits.length - 1)
+    const { choices, answer } = mcqFrom(count, () => count + pick([-4, -2, 2, 4]))
+    return {
+      subtopicId: 'combinatorics-counting',
+      type: 'mcq',
+      prompt: `Using the digits ${digits.join(', ')} (each used at most once), how many different 2-digit numbers can you form?`,
+      choices,
+      answer,
+      hint: `For the first digit, you have ${digits.length} choices. For the second digit, you have ${digits.length - 1} choices left. Multiply them together.`,
+    }
+  }
+  if (difficulty === 'medium') {
+    const people = randInt(4, 8)
+    const handshakes = (people * (people - 1)) / 2
+    const { choices, answer } = mcqFrom(handshakes, () => handshakes + pick([-3, -2, -1, 1, 2, 3]))
+    return {
+      subtopicId: 'combinatorics-counting',
+      type: 'mcq',
+      prompt: `At a party, everyone shakes hands with everyone else exactly once. If there are ${people} people, how many handshakes happen in total?`,
+      choices,
+      answer,
+      hint: `Each of the ${people} people shakes hands with ${people - 1} others, but that counts every handshake twice, so divide by 2.`,
+    }
+  }
+  const shirts = randInt(2, 5)
+  const pants = randInt(2, 5)
+  const total = shirts * pants
+  const { choices, answer } = mcqFrom(total, () => total + pick([-2, -1, 1, 2]))
+  return {
+    subtopicId: 'combinatorics-counting',
+    type: 'mcq',
+    prompt: `You have ${shirts} different shirts and ${pants} different pairs of pants. How many different outfits (one shirt + one pair of pants) can you make?`,
+    choices,
+    answer,
+    hint: `Multiply the number of shirt choices by the number of pants choices (${shirts} × ${pants}).`,
+  }
+}
+
 // ---------------------------------------------------------------------------
 // REGISTRY
 // ---------------------------------------------------------------------------
@@ -1473,7 +1608,7 @@ const GENERATORS = {
   'perimeter-area': [genPerimeterRect, genAreaRect, genAreaComposite],
   'data-analysis': [genBarGraphQuestion, genLineGraphQuestion],
   'word-problems': [genPartWhole, genComparison, genMultiStep],
-  olympiad: [genPatternsSequences, genLogicPuzzles, genCompetitionProblems],
+  olympiad: [genPatternsSequences, genLogicPuzzles, genNumberTheoryPuzzles, genGeometrySpatial, genCombinatoricsCounting, genCompetitionProblems],
 }
 
 const DIFFICULTY_TIERS = ['easy', 'medium', 'hard']

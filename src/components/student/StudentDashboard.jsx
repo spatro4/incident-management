@@ -25,6 +25,8 @@ export default function StudentDashboard() {
   const [view, setView] = useState('home') // 'home' | 'quest' | 'chapter'
   const [activeChapterId, setActiveChapterId] = useState(null)
 
+  if (!state) return null
+
   const chapterStats = state.chapterStats
   const unlockedBadgeIds = new Set(state.student.badges)
 

@@ -1,13 +1,14 @@
-// LocalStorage-backed mock database for Math Quest.
+// LocalStorage-backed mock database for Math Quest. Each user's progress is
+// stored under its own key so multiple students can share the same browser.
 import { CHAPTERS, BADGES, LEVEL_XP_STEP, XP_PER_QUEST_BONUS } from '../data/curriculum'
 
-const STORAGE_KEY = 'mathquest_db_v1'
+const STORAGE_PREFIX = 'mathquest_db_v1:'
 
 const todayISO = () => new Date().toISOString().slice(0, 10)
 
-const defaultState = () => ({
+const defaultState = (displayName = 'Explorer') => ({
   student: {
-    name: 'Explorer',
+    name: displayName,
     points: 0,
     level: 1,
     streak: 0,
@@ -26,13 +27,13 @@ const defaultState = () => ({
   },
 })
 
-export function loadState() {
+export function loadState(username, displayName) {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return defaultState()
+    const raw = localStorage.getItem(STORAGE_PREFIX + username)
+    if (!raw) return defaultState(displayName)
     const parsed = JSON.parse(raw)
     // shallow-merge with defaults to survive schema additions
-    const base = defaultState()
+    const base = defaultState(displayName)
     return {
       ...base,
       ...parsed,
@@ -41,17 +42,17 @@ export function loadState() {
     }
   } catch (e) {
     console.warn('Failed to load saved progress, starting fresh.', e)
-    return defaultState()
+    return defaultState(displayName)
   }
 }
 
-export function saveState(state) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+export function saveState(username, state) {
+  localStorage.setItem(STORAGE_PREFIX + username, JSON.stringify(state))
 }
 
-export function resetState() {
-  localStorage.removeItem(STORAGE_KEY)
-  return defaultState()
+export function resetState(username, displayName) {
+  localStorage.removeItem(STORAGE_PREFIX + username)
+  return defaultState(displayName)
 }
 
 function levelForPoints(points) {
