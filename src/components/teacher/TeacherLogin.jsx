@@ -46,7 +46,6 @@ export default function TeacherLogin({ onAuthenticated }) {
             Log In
           </button>
         </form>
-        <p className="text-[11px] text-slate-300 mt-4">Hint: the default password is teacher123</p>
       </div>
     </div>
   )

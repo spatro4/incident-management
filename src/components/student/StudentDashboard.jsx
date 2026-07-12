@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Flame, Star, Trophy, Rocket, Megaphone, ChevronRight } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
-import { CHAPTERS, CHAPTER_ICONS, BADGES } from '../../data/curriculum'
+import { CHAPTERS, CHAPTER_ICONS, BADGES, LEVELS } from '../../data/curriculum'
 import ProgressBar from '../common/ProgressBar'
 import Badge from '../common/Badge'
 import DailyQuest from './DailyQuest'
@@ -111,41 +111,49 @@ export default function StudentDashboard() {
         </div>
       </div>
 
-      {/* Chapters grid */}
-      <div>
-        <h3 className="font-display font-bold text-slate-700 mb-3">Practice by Chapter</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {CHAPTERS.map((chapter) => {
-            const Icon = CHAPTER_ICONS[chapter.icon]
-            const cs = chapterStats[chapter.id]
-            const mastery = cs && cs.attempts > 0 ? Math.round((cs.correct / cs.attempts) * 100) : 0
-            const isLocked = (state.assignments.lockedChapters || []).includes(chapter.id)
-            return (
-              <div key={chapter.id} className="card-playful p-4 flex flex-col gap-3">
-                <div className="flex items-center gap-3">
-                  <div className={`p-3 rounded-2xl bg-gradient-to-br ${chapter.gradient}`}>
-                    {Icon && <Icon size={22} className="text-white" />}
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-display font-bold text-slate-700">{chapter.title}</p>
-                    <p className="text-xs text-slate-400">{chapter.description}</p>
-                  </div>
-                </div>
-                <ProgressBar value={mastery} max={100} colorClass="bg-candy-green" height="h-2.5" showLabel label="Mastery" />
-                <button
-                  disabled={isLocked}
-                  onClick={() => {
-                    setActiveChapterId(chapter.id)
-                    setView('chapter')
-                  }}
-                  className="btn-chunky bg-slate-800 disabled:bg-slate-300 text-white text-sm py-2.5 mt-1"
-                >
-                  {isLocked ? 'Locked by Teacher' : 'Practice This Chapter'}
-                </button>
+      {/* Chapters grid, grouped by level */}
+      <div className="space-y-6">
+        {Object.entries(LEVELS).map(([levelKey, levelLabel]) => {
+          const chaptersInLevel = CHAPTERS.filter((c) => c.level === levelKey)
+          if (chaptersInLevel.length === 0) return null
+          return (
+            <div key={levelKey}>
+              <h3 className="font-display font-bold text-slate-700 mb-3">{levelLabel}</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {chaptersInLevel.map((chapter) => {
+                  const Icon = CHAPTER_ICONS[chapter.icon]
+                  const cs = chapterStats[chapter.id]
+                  const mastery = cs && cs.attempts > 0 ? Math.round((cs.correct / cs.attempts) * 100) : 0
+                  const isLocked = (state.assignments.lockedChapters || []).includes(chapter.id)
+                  return (
+                    <div key={chapter.id} className="card-playful p-4 flex flex-col gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-3 rounded-2xl bg-gradient-to-br ${chapter.gradient}`}>
+                          {Icon && <Icon size={22} className="text-white" />}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-display font-bold text-slate-700">{chapter.title}</p>
+                          <p className="text-xs text-slate-400">{chapter.description}</p>
+                        </div>
+                      </div>
+                      <ProgressBar value={mastery} max={100} colorClass="bg-candy-green" height="h-2.5" showLabel label="Mastery" />
+                      <button
+                        disabled={isLocked}
+                        onClick={() => {
+                          setActiveChapterId(chapter.id)
+                          setView('chapter')
+                        }}
+                        className="btn-chunky bg-slate-800 disabled:bg-slate-300 text-white text-sm py-2.5 mt-1"
+                      >
+                        {isLocked ? 'Locked by Teacher' : 'Practice This Chapter'}
+                      </button>
+                    </div>
+                  )
+                })}
               </div>
-            )
-          })}
-        </div>
+            </div>
+          )
+        })}
       </div>
 
       {/* Recent activity */}

@@ -1,10 +1,15 @@
-// Singapore Math — Grade 4 curriculum map
-// Organized using Concrete-Pictorial-Abstract (CPA) progression.
+// Singapore Math — Primary 4 curriculum map (Level 4A + 4B), plus bonus
+// enrichment chapters. Organized using Concrete-Pictorial-Abstract (CPA)
+// progression.
 import {
   Hash,
+  Grid3x3,
+  Calculator,
   PieChart,
   Percent,
+  Sigma,
   Shapes,
+  Ruler,
   BarChart3,
   Blocks,
   Trophy,
@@ -20,85 +25,173 @@ export const DIFFICULTY_LABELS = {
 
 export const CHAPTER_PRACTICE_LENGTH = 25
 
+export const LEVELS = {
+  '4A': 'Level 4A',
+  '4B': 'Level 4B',
+  bonus: 'Bonus Practice',
+}
+
 export const CHAPTERS = [
+  // ---------------------------------------------------------------------
+  // LEVEL 4A
+  // ---------------------------------------------------------------------
   {
-    id: 'place-value',
+    id: 'whole-numbers',
+    level: '4A',
     order: 1,
-    title: 'Place Value & Whole Numbers',
-    short: 'Place Value',
+    title: 'Whole Numbers',
+    short: 'Whole Numbers',
     icon: 'Hash',
     color: 'candy.blue',
     gradient: 'from-sky-400 to-blue-500',
-    description: 'Numbers up to 100,000, rounding, factors & multiples.',
+    description: 'Numbers to 100,000, rounding, and estimation.',
     subtopics: [
-      { id: 'reading-numbers', label: 'Reading & writing numbers to 100,000' },
-      { id: 'rounding', label: 'Rounding to nearest 10, 100, 1000' },
-      { id: 'factors-multiples', label: 'Factors & multiples' },
+      { id: 'numbers-to-100000', label: 'Numbers to 100,000' },
+      { id: 'rounding-estimation', label: 'Rounding and Estimation' },
+    ],
+  },
+  {
+    id: 'factors-multiples',
+    level: '4A',
+    order: 2,
+    title: 'Multiples and Factors',
+    short: 'Multiples & Factors',
+    icon: 'Grid3x3',
+    color: 'candy.teal',
+    gradient: 'from-teal-400 to-cyan-500',
+    description: 'Factors and common factors, multiples and common multiples, prime and composite numbers.',
+    subtopics: [
+      { id: 'factors-common-factors', label: 'Factors and Common Factors' },
+      { id: 'multiples-common-multiples', label: 'Multiples and Common Multiples' },
+      { id: 'prime-composite', label: 'Prime and Composite Numbers' },
+    ],
+  },
+  {
+    id: 'multiplication-division',
+    level: '4A',
+    order: 3,
+    title: 'Multiplication and Division',
+    short: 'Mult. & Division',
+    icon: 'Calculator',
+    color: 'candy.orange',
+    gradient: 'from-orange-400 to-red-400',
+    description: 'Multiplying by a 2-digit number, dividing by a 1-digit number, and word problems.',
+    subtopics: [
+      { id: 'multiply-2digit', label: 'Multiplying by a 2-Digit Number' },
+      { id: 'divide-1digit', label: 'Dividing by a 1-Digit Number' },
+      { id: 'word-problems-multdiv', label: 'Word Problems' },
     ],
   },
   {
     id: 'fractions',
-    order: 2,
+    level: '4A',
+    order: 4,
     title: 'Fractions',
     short: 'Fractions',
     icon: 'PieChart',
     color: 'candy.purple',
     gradient: 'from-purple-400 to-fuchsia-500',
-    description: 'Equivalent fractions, add/subtract fractions, mixed numbers.',
+    description: 'Mixed numbers, comparing and ordering, unlike fractions, fraction of a set, and word problems.',
     subtopics: [
-      { id: 'equivalent-fractions', label: 'Equivalent fractions' },
-      { id: 'add-sub-fractions', label: 'Adding & subtracting fractions' },
-      { id: 'mixed-numbers', label: 'Mixed numbers & improper fractions' },
+      { id: 'mixed-improper', label: 'Mixed Numbers and Improper Fractions' },
+      { id: 'comparing-ordering-fractions', label: 'Comparing and Ordering Fractions' },
+      { id: 'add-sub-unlike', label: 'Adding and Subtracting Unlike Fractions' },
+      { id: 'fraction-of-set', label: 'Fraction of a Set' },
+      { id: 'word-problems-fractions', label: 'Word Problems' },
     ],
   },
+
+  // ---------------------------------------------------------------------
+  // LEVEL 4B
+  // ---------------------------------------------------------------------
   {
     id: 'decimals',
-    order: 3,
+    level: '4B',
+    order: 5,
     title: 'Decimals',
     short: 'Decimals',
     icon: 'Percent',
     color: 'candy.teal',
     gradient: 'from-teal-400 to-emerald-500',
-    description: 'Tenths, hundredths, fraction conversion, four operations.',
+    description: 'Tenths, hundredths, and thousandths; comparing and ordering; rounding decimals.',
     subtopics: [
-      { id: 'tenths-hundredths', label: 'Tenths & hundredths' },
-      { id: 'decimal-fraction-conversion', label: 'Converting decimals & fractions' },
-      { id: 'decimal-operations', label: 'Adding, subtracting, multiplying decimals' },
+      { id: 'tenths-hundredths-thousandths', label: 'Tenths, Hundredths, and Thousandths' },
+      { id: 'comparing-ordering-decimals', label: 'Comparing and Ordering Decimals' },
+      { id: 'rounding-decimals', label: 'Rounding Decimals' },
+    ],
+  },
+  {
+    id: 'decimal-operations',
+    level: '4B',
+    order: 6,
+    title: 'Decimals Operations',
+    short: 'Decimal Ops',
+    icon: 'Sigma',
+    color: 'candy.green',
+    gradient: 'from-emerald-400 to-lime-500',
+    description: 'Adding and subtracting decimals, multiplying and dividing decimals, and word problems.',
+    subtopics: [
+      { id: 'add-sub-decimals', label: 'Adding and Subtracting Decimals' },
+      { id: 'multiply-divide-decimals', label: 'Multiplying and Dividing Decimals' },
+      { id: 'word-problems-decimals', label: 'Word Problems' },
     ],
   },
   {
     id: 'geometry',
-    order: 4,
+    level: '4B',
+    order: 7,
     title: 'Geometry',
     short: 'Geometry',
     icon: 'Shapes',
     color: 'candy.orange',
     gradient: 'from-orange-400 to-amber-500',
-    description: 'Angles, perpendicular/parallel lines, area & perimeter of composite figures.',
+    description: 'Angles and protractor use, perpendicular and parallel lines, squares and rectangles, symmetry.',
     subtopics: [
-      { id: 'angles', label: 'Measuring & classifying angles' },
-      { id: 'lines', label: 'Perpendicular & parallel lines' },
-      { id: 'area-perimeter', label: 'Area & perimeter of composite figures' },
+      { id: 'angles-protractor', label: 'Angles and Protractor Use' },
+      { id: 'perpendicular-parallel', label: 'Perpendicular and Parallel Lines' },
+      { id: 'squares-rectangles', label: 'Squares and Rectangles' },
+      { id: 'symmetry', label: 'Symmetry' },
     ],
   },
   {
-    id: 'data',
-    order: 5,
-    title: 'Bar Graphs, Line Graphs & Data',
-    short: 'Data & Graphs',
+    id: 'perimeter-area',
+    level: '4B',
+    order: 8,
+    title: 'Perimeter and Area',
+    short: 'Perimeter & Area',
+    icon: 'Ruler',
+    color: 'candy.blue',
+    gradient: 'from-blue-400 to-indigo-500',
+    description: 'Perimeter of squares and rectangles, area of squares and rectangles, area of composite figures.',
+    subtopics: [
+      { id: 'perimeter-squares-rectangles', label: 'Perimeter of Squares and Rectangles' },
+      { id: 'area-squares-rectangles', label: 'Area of Squares and Rectangles' },
+      { id: 'area-composite', label: 'Area of Composite Figures' },
+    ],
+  },
+  {
+    id: 'data-analysis',
+    level: '4B',
+    order: 9,
+    title: 'Data Analysis',
+    short: 'Data Analysis',
     icon: 'BarChart3',
     color: 'candy.pink',
     gradient: 'from-pink-400 to-rose-500',
-    description: 'Reading & interpreting bar graphs, line graphs, and data sets.',
+    description: 'Reading tables and bar graphs, and line graphs.',
     subtopics: [
-      { id: 'bar-graphs', label: 'Reading bar graphs' },
-      { id: 'line-graphs', label: 'Reading line graphs' },
-      { id: 'data-analysis', label: 'Analyzing & comparing data' },
+      { id: 'tables-bar-graphs', label: 'Tables and Bar Graphs' },
+      { id: 'line-graphs', label: 'Line Graphs' },
     ],
   },
+
+  // ---------------------------------------------------------------------
+  // BONUS PRACTICE
+  // ---------------------------------------------------------------------
   {
     id: 'word-problems',
-    order: 6,
+    level: 'bonus',
+    order: 10,
     title: 'Word Problems (Bar Modeling)',
     short: 'Word Problems',
     icon: 'Blocks',
@@ -113,7 +206,8 @@ export const CHAPTERS = [
   },
   {
     id: 'olympiad',
-    order: 7,
+    level: 'bonus',
+    order: 11,
     title: 'Math Olympiad Prep',
     short: 'Olympiad Prep',
     icon: 'Trophy',
@@ -130,15 +224,21 @@ export const CHAPTERS = [
 
 export const CHAPTER_ICONS = {
   Hash,
+  Grid3x3,
+  Calculator,
   PieChart,
   Percent,
+  Sigma,
   Shapes,
+  Ruler,
   BarChart3,
   Blocks,
   Trophy,
 }
 
 export const getChapterById = (id) => CHAPTERS.find((c) => c.id === id)
+
+export const chaptersByLevel = (level) => CHAPTERS.filter((c) => c.level === level)
 
 export const BADGES = [
   { id: 'first-steps', label: 'First Steps', description: 'Complete your first quest', icon: '🌱', condition: (s) => s.totalQuestsCompleted >= 1 },

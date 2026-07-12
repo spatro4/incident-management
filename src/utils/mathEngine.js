@@ -1,4 +1,5 @@
-// MathEngine — dynamic question generation for Singapore Math Grade 4 topics.
+// MathEngine — dynamic question generation for Singapore Math Primary 4
+// (Level 4A + 4B) topics, plus bonus enrichment chapters.
 // Every generator accepts a difficulty tier: 'easy' | 'medium' | 'hard'
 // (simple -> advanced), so chapter practice can progress smoothly.
 
@@ -30,10 +31,13 @@ function mcqFrom(correctValue, distractorFn, formatFn = (v) => `${v}`) {
   return { choices, answer: formatFn(correctValue) }
 }
 
+const WP_NAMES = ['Mei Ling', 'Ahmad', 'Priya', 'Wei Jie', 'Aisha', 'Kumar', 'Siti', 'Ryan']
+const WP_ITEMS = ['stickers', 'marbles', 'story books', 'seashells', 'trading cards', 'stamps']
+
 // ---------------------------------------------------------------------------
-// PLACE VALUE
+// WHOLE NUMBERS
 // ---------------------------------------------------------------------------
-function genReadingNumbers(difficulty = 'medium') {
+function genNumbersTo100000(difficulty = 'medium') {
   const places = ['ones', 'tens', 'hundreds', 'thousands', 'ten thousands']
 
   if (difficulty === 'hard') {
@@ -46,7 +50,7 @@ function genReadingNumbers(difficulty = 'medium') {
     const correct = digitA * Math.pow(10, idxA) + digitB * Math.pow(10, idxB)
     const { choices, answer } = mcqFrom(correct, () => correct + pick([-1000, -100, 100, 1000, 10000]))
     return {
-      subtopicId: 'reading-numbers',
+      subtopicId: 'numbers-to-100000',
       type: 'mcq',
       prompt: `In the number ${n.toLocaleString()}, what is the sum of the value of the ten-thousands digit and the value of the hundreds digit?`,
       choices,
@@ -63,7 +67,7 @@ function genReadingNumbers(difficulty = 'medium') {
   const placeValue = Number(digitFromRight) * Math.pow(10, digitIdx)
   const { choices, answer } = mcqFrom(placeValue, () => randInt(0, 9) * Math.pow(10, randInt(0, maxIdx)))
   return {
-    subtopicId: 'reading-numbers',
+    subtopicId: 'numbers-to-100000',
     type: 'mcq',
     prompt: `In the number ${n.toLocaleString()}, what is the value of the digit in the ${places[digitIdx]} place?`,
     choices,
@@ -72,7 +76,7 @@ function genReadingNumbers(difficulty = 'medium') {
   }
 }
 
-function genRounding(difficulty = 'medium') {
+function genRoundingEstimation(difficulty = 'medium') {
   let roundTo, n
   if (difficulty === 'easy') {
     roundTo = 10
@@ -90,7 +94,7 @@ function genRounding(difficulty = 'medium') {
     return rounded + offset
   })
   return {
-    subtopicId: 'rounding',
+    subtopicId: 'rounding-estimation',
     type: 'mcq',
     prompt: `Round ${n.toLocaleString()} to the nearest ${roundTo.toLocaleString()}.`,
     choices,
@@ -99,16 +103,17 @@ function genRounding(difficulty = 'medium') {
   }
 }
 
-function genFactorsMultiples(difficulty = 'medium') {
+// ---------------------------------------------------------------------------
+// MULTIPLES AND FACTORS
+// ---------------------------------------------------------------------------
+function genFactorsCommonFactors(difficulty = 'medium') {
   if (difficulty === 'hard') {
-    const pairs = [
-      [12, 18], [16, 24], [20, 30], [18, 27], [24, 36], [15, 25], [14, 21], [28, 42],
-    ]
+    const pairs = [[12, 18], [16, 24], [20, 30], [18, 27], [24, 36], [15, 25], [14, 21], [28, 42]]
     const [x, y] = pick(pairs)
     const gcf = gcd(x, y)
     const { choices, answer } = mcqFrom(gcf, () => Math.max(1, gcf + pick([-3, -2, -1, 1, 2, 3])))
     return {
-      subtopicId: 'factors-multiples',
+      subtopicId: 'factors-common-factors',
       type: 'mcq',
       prompt: `What is the Greatest Common Factor (GCF) of ${x} and ${y}?`,
       choices,
@@ -116,32 +121,79 @@ function genFactorsMultiples(difficulty = 'medium') {
       hint: `List the factors of both numbers and find the largest one they share.`,
     }
   }
-
-  const askFactor = Math.random() < 0.5
-  if (askFactor) {
-    const n = difficulty === 'easy' ? pick([12, 18, 24]) : pick([12, 18, 24, 36, 48, 60, 72, 84, 90])
-    const factors = []
-    for (let i = 1; i <= n; i++) if (n % i === 0) factors.push(i)
-    const notAFactor = randInt(2, 20)
-    const candidates = shuffle([...factors.filter((f) => f !== 1 && f !== n), notAFactor]).slice(0, 4)
-    const correct = pick(factors.filter((f) => candidates.includes(f)) || [factors[1]])
-    const finalChoices = shuffle(Array.from(new Set([correct, ...candidates])).slice(0, 4).map(String))
+  if (difficulty === 'medium') {
+    const pairs = [[12, 18], [8, 12], [10, 15], [9, 12], [6, 15], [16, 20]]
+    const [x, y] = pick(pairs)
+    const factorsX = []
+    for (let i = 1; i <= x; i++) if (x % i === 0) factorsX.push(i)
+    const factorsY = []
+    for (let i = 1; i <= y; i++) if (y % i === 0) factorsY.push(i)
+    const common = factorsX.filter((f) => factorsY.includes(f) && f !== 1)
+    const correct = pick(common)
+    const { choices, answer } = mcqFrom(correct, () => correct + pick([-2, -1, 1, 2, 3]))
     return {
-      subtopicId: 'factors-multiples',
+      subtopicId: 'factors-common-factors',
       type: 'mcq',
-      prompt: `Which of these numbers is a factor of ${n}?`,
-      choices: finalChoices,
-      answer: String(correct),
-      hint: `A factor divides ${n} exactly, with no remainder. Try dividing each choice into ${n}.`,
+      prompt: `Which of these is a common factor of ${x} and ${y} (other than 1)?`,
+      choices,
+      answer,
+      hint: `List the factors of both ${x} and ${y}, then find a number that appears in both lists.`,
     }
   }
-  const [rangeMin, rangeMax] = difficulty === 'easy' ? [2, 6] : [3, 9]
-  const a = randInt(rangeMin, rangeMax)
-  const b = randInt(rangeMin, rangeMax)
+  const n = pick([12, 18, 24])
+  const factors = []
+  for (let i = 1; i <= n; i++) if (n % i === 0) factors.push(i)
+  const notAFactor = randInt(2, 20)
+  const candidates = shuffle([...factors.filter((f) => f !== 1 && f !== n), notAFactor]).slice(0, 4)
+  const correct = pick(factors.filter((f) => candidates.includes(f)) || [factors[1]])
+  const finalChoices = shuffle(Array.from(new Set([correct, ...candidates])).slice(0, 4).map(String))
+  return {
+    subtopicId: 'factors-common-factors',
+    type: 'mcq',
+    prompt: `Which of these numbers is a factor of ${n}?`,
+    choices: finalChoices,
+    answer: String(correct),
+    hint: `A factor divides ${n} exactly, with no remainder. Try dividing each choice into ${n}.`,
+  }
+}
+
+function genMultiplesCommonMultiples(difficulty = 'medium') {
+  if (difficulty === 'hard') {
+    const pairs = [[4, 6], [3, 5], [6, 8], [4, 10], [5, 6], [3, 4], [6, 9], [8, 12]]
+    const [x, y] = pick(pairs)
+    const lcm = (x * y) / gcd(x, y)
+    const { choices, answer } = mcqFrom(lcm, () => lcm + pick([-x, -y, x, y]))
+    return {
+      subtopicId: 'multiples-common-multiples',
+      type: 'mcq',
+      prompt: `What is the Least Common Multiple (LCM) of ${x} and ${y}?`,
+      choices,
+      answer,
+      hint: `List the multiples of both numbers and find the smallest one they share.`,
+    }
+  }
+  if (difficulty === 'medium') {
+    const [a, b] = pick([[2, 3], [3, 4], [2, 5], [4, 6], [3, 6]])
+    const multiplesA = Array.from({ length: 8 }, (_, i) => a * (i + 1))
+    const multiplesB = Array.from({ length: 8 }, (_, i) => b * (i + 1))
+    const common = multiplesA.filter((m) => multiplesB.includes(m))
+    const correct = pick(common)
+    const { choices, answer } = mcqFrom(correct, () => correct + pick([-a, -b, a, b]))
+    return {
+      subtopicId: 'multiples-common-multiples',
+      type: 'mcq',
+      prompt: `Which of these numbers is a common multiple of ${a} and ${b}?`,
+      choices,
+      answer,
+      hint: `List out the first several multiples of both ${a} and ${b}, then look for a match.`,
+    }
+  }
+  const a = randInt(2, 9)
+  const b = randInt(2, 9)
   const correct = a * b
   const { choices, answer } = mcqFrom(correct, () => correct + pick([-a, a, -b, b, randInt(-6, 6)]))
   return {
-    subtopicId: 'factors-multiples',
+    subtopicId: 'multiples-common-multiples',
     type: 'mcq',
     prompt: `What is the ${b}th multiple of ${a}?`,
     choices,
@@ -150,106 +202,123 @@ function genFactorsMultiples(difficulty = 'medium') {
   }
 }
 
+function genPrimeComposite(difficulty = 'medium') {
+  const maxN = difficulty === 'easy' ? 20 : difficulty === 'hard' ? 100 : 50
+  const n = randInt(2, maxN)
+  const isPrime = (num) => {
+    if (num < 2) return false
+    for (let i = 2; i * i <= num; i++) if (num % i === 0) return false
+    return true
+  }
+  const prime = isPrime(n)
+  const { choices, answer } = mcqFrom(prime ? 'Prime' : 'Composite', () => (prime ? 'Composite' : 'Prime'), (v) => v)
+  return {
+    subtopicId: 'prime-composite',
+    type: 'mcq',
+    prompt: `Is ${n} a prime number or a composite number?`,
+    choices,
+    answer,
+    hint: `A prime number has exactly two factors: 1 and itself. A composite number has more than two factors.`,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// MULTIPLICATION AND DIVISION
+// ---------------------------------------------------------------------------
+function genMultiply2Digit(difficulty = 'medium') {
+  const a = difficulty === 'easy' ? randInt(10, 30) : difficulty === 'hard' ? randInt(200, 800) : randInt(100, 300)
+  const b = randInt(11, 99)
+  const product = a * b
+  const { choices, answer } = mcqFrom(product, () => product + pick([-b, b, -a, a, -10, 10]))
+  return {
+    subtopicId: 'multiply-2digit',
+    type: 'mcq',
+    prompt: `${a} × ${b} = ?`,
+    choices,
+    answer,
+    hint: `Break ${b} into tens and ones (${Math.floor(b / 10) * 10} + ${b % 10}), multiply each part by ${a}, then add.`,
+  }
+}
+
+function genDivide1Digit(difficulty = 'medium') {
+  const divisor = randInt(2, 9)
+  if (difficulty === 'hard') {
+    const quotient = randInt(20, 90)
+    const remainder = randInt(1, divisor - 1)
+    const dividend = quotient * divisor + remainder
+    const answerStr = `${quotient} r ${remainder}`
+    const { choices, answer } = mcqFrom(answerStr, () => `${quotient + pick([-2, -1, 1, 2])} r ${remainder}`, (v) => v)
+    return {
+      subtopicId: 'divide-1digit',
+      type: 'mcq',
+      prompt: `${dividend} ÷ ${divisor} = ? (write your answer as "quotient r remainder")`,
+      choices,
+      answer,
+      hint: `Divide as usual — whatever is left over after the last full group is the remainder.`,
+    }
+  }
+  const quotient = difficulty === 'easy' ? randInt(10, 50) : randInt(50, 200)
+  const dividend = quotient * divisor
+  const { choices, answer } = mcqFrom(quotient, () => quotient + pick([-3, -2, -1, 1, 2, 3]))
+  return {
+    subtopicId: 'divide-1digit',
+    type: 'mcq',
+    prompt: `${dividend} ÷ ${divisor} = ?`,
+    choices,
+    answer,
+    hint: `Think: ${divisor} times what number equals ${dividend}?`,
+  }
+}
+
+function genMultDivWordProblems(difficulty = 'medium') {
+  const name = pick(WP_NAMES)
+  const item = pick(WP_ITEMS)
+
+  if (difficulty === 'hard') {
+    const boxes = randInt(4, 9)
+    const perBox = randInt(10, 30)
+    const people = pick([2, 3, 4, 5])
+    const total = boxes * perBox
+    const remainder = total % people
+    const adjustedPerBox = remainder === 0 ? perBox : perBox + Math.ceil((people - remainder) / boxes)
+    const adjustedTotal = boxes * adjustedPerBox
+    const each = adjustedTotal / people
+    return {
+      subtopicId: 'word-problems-multdiv',
+      type: 'input',
+      prompt: `${name} packed ${boxes} boxes with ${adjustedPerBox} ${item} in each box. If the ${item} are shared equally among ${people} friends, how many does each friend get?`,
+      answer: String(each),
+      hint: `First find the total (${boxes} × ${adjustedPerBox} = ${adjustedTotal}), then divide by ${people}.`,
+    }
+  }
+
+  if (difficulty === 'easy' || Math.random() < 0.5) {
+    const groups = randInt(4, 12)
+    const perGroup = randInt(5, 20)
+    const total = groups * perGroup
+    return {
+      subtopicId: 'word-problems-multdiv',
+      type: 'input',
+      prompt: `${name} has ${groups} bags with ${perGroup} ${item} in each bag. How many ${item} does ${name} have in total?`,
+      answer: String(total),
+      hint: `Multiply the number of bags by the number of ${item} in each bag (${groups} × ${perGroup}).`,
+    }
+  }
+  const people = pick([2, 3, 4, 5, 6])
+  const each = randInt(5, 20)
+  const total = people * each
+  return {
+    subtopicId: 'word-problems-multdiv',
+    type: 'input',
+    prompt: `${name} has ${total} ${item} and wants to share them equally among ${people} friends. How many ${item} will each friend get?`,
+    answer: String(each),
+    hint: `Divide the total number of ${item} by the number of friends (${total} ÷ ${people}).`,
+  }
+}
+
 // ---------------------------------------------------------------------------
 // FRACTIONS
 // ---------------------------------------------------------------------------
-function genEquivalentFractions(difficulty = 'medium') {
-  if (difficulty === 'hard') {
-    const base = pick([2, 3, 4, 5])
-    const factor = randInt(2, 5)
-    const den = base * factor
-    const num = randInt(1, base - 1) * factor
-    const simplifiedNum = num / factor
-    const { choices, answer } = mcqFrom(simplifiedNum, () => simplifiedNum + pick([-2, -1, 1, 2]))
-    return {
-      subtopicId: 'equivalent-fractions',
-      type: 'mcq',
-      prompt: `Simplify ${num}/${den} to its lowest terms. What is the new numerator (over ${base})?`,
-      choices,
-      answer,
-      hint: `Divide both the numerator and denominator by their greatest common factor (${factor}).`,
-    }
-  }
-  const den = difficulty === 'easy' ? pick([2, 3, 4]) : pick([2, 3, 4, 5, 6])
-  const num = randInt(1, den - 1)
-  const factor = difficulty === 'easy' ? randInt(2, 3) : randInt(2, 5)
-  const targetDen = den * factor
-  const correctNum = num * factor
-  const { choices, answer } = mcqFrom(correctNum, () => correctNum + pick([-2, -1, 1, 2]))
-  return {
-    subtopicId: 'equivalent-fractions',
-    type: 'mcq',
-    prompt: `Find the missing numerator: ${num}/${den} = ?/${targetDen}`,
-    choices,
-    answer,
-    hint: `Whatever you multiply the denominator by (${den} × ${factor} = ${targetDen}), multiply the numerator by the same amount.`,
-  }
-}
-
-function genAddSubFractions(difficulty = 'medium') {
-  if (difficulty === 'hard') {
-    const pairs = [[2, 3], [3, 4], [4, 6], [2, 5], [3, 6], [4, 8], [5, 10], [2, 7]]
-    let [d1, d2] = pick(pairs)
-    let n1 = randInt(1, d1 - 1)
-    let n2 = randInt(1, d2 - 1)
-    const isAdd = Math.random() < 0.5
-    const lcmVal = (d1 * d2) / gcd(d1, d2)
-    let cn1 = n1 * (lcmVal / d1)
-    let cn2 = n2 * (lcmVal / d2)
-    if (!isAdd && cn2 > cn1) {
-      ;[d1, d2] = [d2, d1]
-      ;[n1, n2] = [n2, n1]
-      ;[cn1, cn2] = [cn2, cn1]
-    }
-    const resultNum = isAdd ? cn1 + cn2 : cn1 - cn2
-    const [simpNum, simpDen] = simplify(resultNum, lcmVal)
-    const answerStr = simpDen === 1 ? `${simpNum}` : `${simpNum}/${simpDen}`
-    const { choices, answer } = mcqFrom(
-      answerStr,
-      () => {
-        const fakeNum = Math.max(0, resultNum + pick([-2, -1, 1, 2]))
-        const [fn, fd] = simplify(fakeNum || 1, lcmVal)
-        return fd === 1 ? `${fn}` : `${fn}/${fd}`
-      },
-      (v) => v
-    )
-    return {
-      subtopicId: 'add-sub-fractions',
-      type: 'mcq',
-      prompt: `${n1}/${d1} ${isAdd ? '+' : '-'} ${n2}/${d2} = ? (give your answer in simplest form)`,
-      choices,
-      answer,
-      hint: `Find a common denominator first (try ${lcmVal}), rewrite both fractions, then ${isAdd ? 'add' : 'subtract'}.`,
-    }
-  }
-
-  const den = difficulty === 'easy' ? pick([2, 3, 4]) : pick([4, 5, 6, 8, 10, 12])
-  let n1 = randInt(1, den - 1)
-  let n2 = randInt(1, den - 1)
-  const isAdd = Math.random() < 0.5
-  if (!isAdd && n2 > n1) [n1, n2] = [n2, n1]
-  const resultNum = isAdd ? n1 + n2 : n1 - n2
-  const [simpNum, simpDen] = simplify(Math.abs(resultNum), den)
-  const answerStr = simpDen === 1 ? `${simpNum}` : `${simpNum}/${simpDen}`
-  const { choices, answer } = mcqFrom(
-    answerStr,
-    () => {
-      const fakeNum = Math.max(0, resultNum + pick([-2, -1, 1, 2]))
-      const [fn, fd] = simplify(fakeNum || 1, den)
-      return fd === 1 ? `${fn}` : `${fn}/${fd}`
-    },
-    (v) => v
-  )
-  return {
-    subtopicId: 'add-sub-fractions',
-    type: 'mcq',
-    prompt: `${n1}/${den} ${isAdd ? '+' : '-'} ${n2}/${den} = ?  (give your answer in simplest form)`,
-    choices,
-    answer,
-    hint: `Since the denominators match, just ${isAdd ? 'add' : 'subtract'} the numerators, then simplify if you can.`,
-  }
-}
-
 function genMixedNumbers(difficulty = 'medium') {
   if (difficulty === 'hard') {
     const den = pick([4, 5, 6, 8])
@@ -271,7 +340,7 @@ function genMixedNumbers(difficulty = 'medium') {
       (v) => v
     )
     return {
-      subtopicId: 'mixed-numbers',
+      subtopicId: 'mixed-improper',
       type: 'mcq',
       prompt: `${w1} ${n1}/${den} + ${w2} ${n2}/${den} = ?`,
       choices,
@@ -288,7 +357,7 @@ function genMixedNumbers(difficulty = 'medium') {
   if (toImproper) {
     const { choices, answer } = mcqFrom(improperNum, () => improperNum + pick([-den, -1, 1, den]))
     return {
-      subtopicId: 'mixed-numbers',
+      subtopicId: 'mixed-improper',
       type: 'mcq',
       prompt: `Convert ${whole} ${num}/${den} to an improper fraction. What is the numerator (over ${den})?`,
       choices,
@@ -305,7 +374,7 @@ function genMixedNumbers(difficulty = 'medium') {
     (v) => v
   )
   return {
-    subtopicId: 'mixed-numbers',
+    subtopicId: 'mixed-improper',
     type: 'mcq',
     prompt: `Convert ${improperNum}/${den} to a mixed number.`,
     choices,
@@ -314,39 +383,187 @@ function genMixedNumbers(difficulty = 'medium') {
   }
 }
 
-// ---------------------------------------------------------------------------
-// DECIMALS
-// ---------------------------------------------------------------------------
-function genTenthsHundredths(difficulty = 'medium') {
-  if (difficulty === 'hard') {
-    const a = randInt(1, 99) / 100
-    let b = randInt(1, 99) / 100
-    while (Math.abs(a - b) < 0.02) b = randInt(1, 99) / 100
-    const bigger = a > b ? a : b
-    const smaller = a === bigger ? b : a
-    const others = new Set([bigger.toFixed(2), smaller.toFixed(2)])
-    while (others.size < 4) others.add((randInt(1, 99) / 100).toFixed(2))
+function genCompareFractions(difficulty = 'medium') {
+  if (difficulty === 'easy') {
+    const den = pick([3, 4, 5, 6])
+    const n1 = randInt(1, den - 1)
+    let n2 = randInt(1, den - 1)
+    while (n2 === n1) n2 = randInt(1, den - 1)
+    const bigger = n1 > n2 ? `${n1}/${den}` : `${n2}/${den}`
+    const smaller = n1 > n2 ? `${n2}/${den}` : `${n1}/${den}`
+    const { choices, answer } = mcqFrom(bigger, () => smaller, (v) => v)
     return {
-      subtopicId: 'tenths-hundredths',
+      subtopicId: 'comparing-ordering-fractions',
       type: 'mcq',
-      prompt: `Which decimal is greater: ${a.toFixed(2)} or ${b.toFixed(2)}?`,
-      choices: shuffle(Array.from(others)),
-      answer: bigger.toFixed(2),
-      hint: `Compare digit by digit, starting from the tenths place.`,
+      prompt: `Which fraction is greater: ${n1}/${den} or ${n2}/${den}?`,
+      choices,
+      answer,
+      hint: `When denominators are the same, the fraction with the bigger numerator is greater.`,
     }
   }
 
-  const useHundredths = difficulty === 'easy' ? false : Math.random() < 0.5
+  const pairs = difficulty === 'hard' ? [[2, 7], [3, 5], [4, 7], [3, 8], [5, 6], [2, 9]] : [[2, 4], [3, 6], [2, 6], [3, 9], [4, 8], [2, 8]]
+  const [d1, d2] = pick(pairs)
+  const n1 = randInt(1, d1 - 1)
+  let n2 = randInt(1, d2 - 1)
+  let v1 = n1 / d1
+  let v2 = n2 / d2
+  let guard = 0
+  while (Math.abs(v1 - v2) < 0.02 && guard < 20) {
+    n2 = randInt(1, d2 - 1)
+    v2 = n2 / d2
+    guard += 1
+  }
+  const bigger = v1 > v2 ? `${n1}/${d1}` : `${n2}/${d2}`
+  const smaller = v1 > v2 ? `${n2}/${d2}` : `${n1}/${d1}`
+  const { choices, answer } = mcqFrom(bigger, () => smaller, (v) => v)
+  return {
+    subtopicId: 'comparing-ordering-fractions',
+    type: 'mcq',
+    prompt: `Which fraction is greater: ${n1}/${d1} or ${n2}/${d2}?`,
+    choices,
+    answer,
+    hint: `Rewrite both fractions with a common denominator, then compare the numerators.`,
+  }
+}
+
+function genAddSubUnlikeFractions(difficulty = 'medium') {
+  const pairs =
+    difficulty === 'easy'
+      ? [[2, 4], [3, 6], [2, 6], [4, 8], [3, 9], [5, 10]]
+      : difficulty === 'hard'
+        ? [[3, 4], [4, 6], [2, 5], [3, 8], [5, 6], [2, 7], [4, 7], [3, 7]]
+        : [[2, 3], [3, 4], [2, 5], [4, 6], [3, 5], [2, 4]]
+  let [d1, d2] = pick(pairs)
+  let n1 = randInt(1, d1 - 1)
+  let n2 = randInt(1, d2 - 1)
+  const isAdd = Math.random() < 0.5
+  const lcmVal = (d1 * d2) / gcd(d1, d2)
+  let cn1 = n1 * (lcmVal / d1)
+  let cn2 = n2 * (lcmVal / d2)
+  if (!isAdd && cn2 > cn1) {
+    ;[d1, d2] = [d2, d1]
+    ;[n1, n2] = [n2, n1]
+    ;[cn1, cn2] = [cn2, cn1]
+  }
+  const resultNum = isAdd ? cn1 + cn2 : cn1 - cn2
+  const [simpNum, simpDen] = simplify(resultNum, lcmVal)
+  const answerStr = simpDen === 1 ? `${simpNum}` : `${simpNum}/${simpDen}`
+  const { choices, answer } = mcqFrom(
+    answerStr,
+    () => {
+      const fakeNum = Math.max(0, resultNum + pick([-2, -1, 1, 2]))
+      const [fn, fd] = simplify(fakeNum || 1, lcmVal)
+      return fd === 1 ? `${fn}` : `${fn}/${fd}`
+    },
+    (v) => v
+  )
+  return {
+    subtopicId: 'add-sub-unlike',
+    type: 'mcq',
+    prompt: `${n1}/${d1} ${isAdd ? '+' : '-'} ${n2}/${d2} = ? (give your answer in simplest form)`,
+    choices,
+    answer,
+    hint: `Find a common denominator first (try ${lcmVal}), rewrite both fractions, then ${isAdd ? 'add' : 'subtract'}.`,
+  }
+}
+
+function genFractionOfSet(difficulty = 'medium') {
+  const den = difficulty === 'easy' ? pick([2, 3, 4]) : difficulty === 'hard' ? pick([5, 6, 8, 9]) : pick([3, 4, 5, 6])
+  const multiplier = difficulty === 'hard' ? randInt(3, 8) : randInt(2, 6)
+  const total = den * multiplier
+  const num = randInt(1, den - 1)
+  const part = (total / den) * num
+
+  if (difficulty === 'hard' && Math.random() < 0.5) {
+    const item = pick(WP_ITEMS)
+    const remainder = total - part
+    return {
+      subtopicId: 'fraction-of-set',
+      type: 'input',
+      prompt: `A class has ${total} ${item}. ${num}/${den} of them are red. How many ${item} are NOT red?`,
+      answer: String(remainder),
+      hint: `First find how many are red (${num}/${den} of ${total} = ${part}), then subtract from the total.`,
+    }
+  }
+  const { choices, answer } = mcqFrom(part, () => part + pick([-multiplier, multiplier, -den, den]))
+  return {
+    subtopicId: 'fraction-of-set',
+    type: 'mcq',
+    prompt: `What is ${num}/${den} of ${total}?`,
+    choices,
+    answer,
+    hint: `Divide ${total} by ${den} to find one part (${total} ÷ ${den} = ${total / den}), then multiply by ${num}.`,
+  }
+}
+
+function genFractionWordProblems(difficulty = 'medium') {
+  const name = pick(WP_NAMES)
+  const item = pick(WP_ITEMS)
+
+  if (difficulty === 'hard') {
+    const den = pick([4, 5, 6])
+    const num = randInt(1, den - 2)
+    const multiplier = randInt(3, 7)
+    const total = den * multiplier
+    const gaveAway = (total / den) * num
+    const remaining = total - gaveAway
+    return {
+      subtopicId: 'word-problems-fractions',
+      type: 'input',
+      prompt: `${name} had ${total} ${item}. ${name} gave away ${num}/${den} of them to friends. How many ${item} does ${name} have left?`,
+      answer: String(remaining),
+      hint: `Find how many were given away (${num}/${den} of ${total} = ${gaveAway}), then subtract from the total.`,
+    }
+  }
+
+  const den = difficulty === 'easy' ? pick([2, 3, 4]) : pick([3, 4, 5, 6])
+  const multiplier = randInt(2, 6)
+  const total = den * multiplier
+  const num = randInt(1, den - 1)
+  const part = (total / den) * num
+  return {
+    subtopicId: 'word-problems-fractions',
+    type: 'input',
+    prompt: `${name} has ${total} ${item}. ${num}/${den} of them are ${pick(['blue', 'red', 'yellow', 'green'])}. How many ${item} is that?`,
+    answer: String(part),
+    hint: `Divide ${total} by ${den} to find one part, then multiply by ${num}.`,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// DECIMALS
+// ---------------------------------------------------------------------------
+function genDecimalPlaceValue(difficulty = 'medium') {
+  if (difficulty === 'hard') {
+    const n = randInt(1, 999)
+    const decimal = (n / 1000).toFixed(3)
+    const { choices, answer } = mcqFrom(
+      decimal,
+      () => (((n + pick([-100, -10, 10, 100]) + 1000) % 1000) / 1000).toFixed(3),
+      (v) => v
+    )
+    return {
+      subtopicId: 'tenths-hundredths-thousandths',
+      type: 'mcq',
+      prompt: `Write ${n}/1000 as a decimal.`,
+      choices,
+      answer,
+      hint: `Thousandths means three digits after the decimal point.`,
+    }
+  }
+
+  const useHundredths = difficulty !== 'easy'
   if (useHundredths) {
     const n = randInt(1, 99)
     const decimal = (n / 100).toFixed(2)
     const { choices, answer } = mcqFrom(
       decimal,
-      () => ((n + pick([-10, -1, 1, 10]) + 100) % 100 / 100).toFixed(2),
+      () => (((n + pick([-10, -1, 1, 10]) + 100) % 100) / 100).toFixed(2),
       (v) => v
     )
     return {
-      subtopicId: 'tenths-hundredths',
+      subtopicId: 'tenths-hundredths-thousandths',
       type: 'mcq',
       prompt: `Write ${n}/100 as a decimal.`,
       choices,
@@ -362,7 +579,7 @@ function genTenthsHundredths(difficulty = 'medium') {
     (v) => v
   )
   return {
-    subtopicId: 'tenths-hundredths',
+    subtopicId: 'tenths-hundredths-thousandths',
     type: 'mcq',
     prompt: `Write ${n}/10 as a decimal.`,
     choices,
@@ -371,83 +588,204 @@ function genTenthsHundredths(difficulty = 'medium') {
   }
 }
 
-function genDecimalFractionConversion(difficulty = 'medium') {
-  const den =
-    difficulty === 'easy' ? pick([2, 4, 5, 10]) : difficulty === 'hard' ? pick([8, 16, 20, 25, 40]) : pick([2, 4, 5, 10, 20, 25, 50])
-  const num = randInt(1, den - 1)
-  const value = num / den
-  const decimals = Number.isInteger(value * 1000) && !Number.isInteger(value * 100) ? 3 : 2
-  const decimalStr = value.toFixed(decimals)
-  const { choices, answer } = mcqFrom(decimalStr, () => (value + pick([-0.1, -0.05, 0.05, 0.1])).toFixed(decimals), (v) => v)
+function genCompareDecimals(difficulty = 'medium') {
+  let aStr, bStr, aVal, bVal
+  if (difficulty === 'easy') {
+    aVal = randInt(1, 9) / 10
+    bVal = randInt(1, 9) / 10
+    let guard = 0
+    while (bVal === aVal && guard < 20) {
+      bVal = randInt(1, 9) / 10
+      guard += 1
+    }
+    aStr = aVal.toFixed(1)
+    bStr = bVal.toFixed(1)
+  } else if (difficulty === 'hard') {
+    aVal = randInt(1, 9) / 10
+    bVal = randInt(10, 99) / 100
+    aStr = aVal.toFixed(1)
+    bStr = bVal.toFixed(2)
+  } else {
+    aVal = randInt(1, 99) / 100
+    bVal = randInt(1, 99) / 100
+    let guard = 0
+    while (Math.abs(aVal - bVal) < 0.02 && guard < 20) {
+      bVal = randInt(1, 99) / 100
+      guard += 1
+    }
+    aStr = aVal.toFixed(2)
+    bStr = bVal.toFixed(2)
+  }
+  const bigger = aVal > bVal ? aStr : bStr
+  const smaller = aVal > bVal ? bStr : aStr
+  const others = new Set([bigger, smaller])
+  let guard = 0
+  while (others.size < 4 && guard < 20) {
+    others.add((randInt(1, 99) / 100).toFixed(2))
+    guard += 1
+  }
   return {
-    subtopicId: 'decimal-fraction-conversion',
+    subtopicId: 'comparing-ordering-decimals',
     type: 'mcq',
-    prompt: `Convert ${num}/${den} to a decimal.`,
-    choices,
-    answer,
-    hint: `Divide the numerator by the denominator: ${num} ÷ ${den}.`,
+    prompt: `Which decimal is greater: ${aStr} or ${bStr}?`,
+    choices: shuffle(Array.from(others)),
+    answer: bigger,
+    hint: `Compare digit by digit, starting from the tenths place. If needed, add a zero so both numbers have the same number of decimal places.`,
   }
 }
 
-function genDecimalOperations(difficulty = 'medium') {
+function genRoundingDecimals(difficulty = 'medium') {
   if (difficulty === 'hard') {
-    const op = pick(['+', '-', '×', '÷'])
+    const n = randInt(1, 999) / 1000
+    const rounded = Math.round(n * 100) / 100
+    const { choices, answer } = mcqFrom(rounded.toFixed(2), () => (rounded + pick([-0.02, -0.01, 0.01, 0.02])).toFixed(2), (v) => v)
+    return {
+      subtopicId: 'rounding-decimals',
+      type: 'mcq',
+      prompt: `Round ${n.toFixed(3)} to the nearest hundredth.`,
+      choices,
+      answer,
+      hint: `Look at the digit in the thousandths place. If it's 5 or more, round the hundredths digit up.`,
+    }
+  }
+  if (difficulty === 'easy') {
+    const n = randInt(10, 99) / 10
+    const rounded = Math.round(n)
+    const { choices, answer } = mcqFrom(rounded, () => rounded + pick([-2, -1, 1, 2]))
+    return {
+      subtopicId: 'rounding-decimals',
+      type: 'mcq',
+      prompt: `Round ${n.toFixed(1)} to the nearest whole number.`,
+      choices,
+      answer,
+      hint: `Look at the digit after the decimal point. If it's 5 or more, round up.`,
+    }
+  }
+  const n = randInt(100, 999) / 1000
+  const rounded = Math.round(n * 10) / 10
+  const { choices, answer } = mcqFrom(rounded.toFixed(1), () => (rounded + pick([-0.2, -0.1, 0.1, 0.2])).toFixed(1), (v) => v)
+  return {
+    subtopicId: 'rounding-decimals',
+    type: 'mcq',
+    prompt: `Round ${n.toFixed(3)} to the nearest tenth.`,
+    choices,
+    answer,
+    hint: `Look at the digit in the hundredths place. If it's 5 or more, round the tenths digit up.`,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// DECIMALS OPERATIONS
+// ---------------------------------------------------------------------------
+function genAddSubDecimals(difficulty = 'medium') {
+  if (difficulty === 'hard') {
     const a = randInt(100, 999) / 100
-    const b = op === '÷' ? pick([2, 4, 5, 10]) : randInt(100, 999) / 100
+    const b = randInt(100, 999) / 100
+    const c = randInt(100, 999) / 100
+    const isAdd = Math.random() < 0.6
     let result, prompt
-    if (op === '+') {
-      result = +(a + b).toFixed(2)
-      prompt = `${a.toFixed(2)} + ${b.toFixed(2)} = ?`
-    } else if (op === '-') {
+    if (isAdd) {
+      result = +(a + b + c).toFixed(2)
+      prompt = `${a.toFixed(2)} + ${b.toFixed(2)} + ${c.toFixed(2)} = ?`
+    } else {
       const hi = Math.max(a, b)
       const lo = Math.min(a, b)
       result = +(hi - lo).toFixed(2)
       prompt = `${hi.toFixed(2)} - ${lo.toFixed(2)} = ?`
-    } else if (op === '×') {
-      const whole = randInt(2, 9)
-      result = +(a * whole).toFixed(2)
-      prompt = `${a.toFixed(2)} × ${whole} = ?`
-    } else {
-      result = +(a / b).toFixed(2)
-      prompt = `${a.toFixed(2)} ÷ ${b} = ?`
     }
     const { choices, answer } = mcqFrom(result, () => +(result + pick([-1, -0.5, 0.5, 1])).toFixed(2), (v) => v.toFixed(2))
     return {
-      subtopicId: 'decimal-operations',
+      subtopicId: 'add-sub-decimals',
       type: 'mcq',
       prompt,
       choices,
       answer,
-      hint: `Line up the decimal points carefully, and double-check your place values.`,
+      hint: `Line up the decimal points carefully before adding or subtracting.`,
     }
   }
 
-  const op = difficulty === 'easy' ? pick(['+', '-']) : pick(['+', '-', '×'])
-  const a = randInt(10, 99) / 10
-  const b = randInt(10, 99) / 10
-  let result
-  let prompt
-  if (op === '+') {
-    result = +(a + b).toFixed(2)
-    prompt = `${a.toFixed(1)} + ${b.toFixed(1)} = ?`
-  } else if (op === '-') {
+  const dp = difficulty === 'easy' ? 1 : 2
+  const a = difficulty === 'easy' ? randInt(10, 99) / 10 : randInt(100, 999) / 100
+  const b = difficulty === 'easy' ? randInt(10, 99) / 10 : randInt(100, 999) / 100
+  const isAdd = Math.random() < 0.5
+  let result, prompt
+  if (isAdd) {
+    result = +(a + b).toFixed(dp)
+    prompt = `${a.toFixed(dp)} + ${b.toFixed(dp)} = ?`
+  } else {
     const hi = Math.max(a, b)
     const lo = Math.min(a, b)
-    result = +(hi - lo).toFixed(2)
-    prompt = `${hi.toFixed(1)} - ${lo.toFixed(1)} = ?`
-  } else {
-    const whole = randInt(2, 9)
-    result = +(a * whole).toFixed(2)
-    prompt = `${a.toFixed(1)} × ${whole} = ?`
+    result = +(hi - lo).toFixed(dp)
+    prompt = `${hi.toFixed(dp)} - ${lo.toFixed(dp)} = ?`
   }
-  const { choices, answer } = mcqFrom(result, () => +(result + pick([-1, -0.5, 0.5, 1])).toFixed(2), (v) => v.toFixed(2))
+  const { choices, answer } = mcqFrom(result, () => +(result + pick([-1, -0.5, 0.5, 1])).toFixed(dp), (v) => v.toFixed(dp))
   return {
-    subtopicId: 'decimal-operations',
+    subtopicId: 'add-sub-decimals',
     type: 'mcq',
     prompt,
     choices,
     answer,
     hint: `Line up the decimal points before you calculate.`,
+  }
+}
+
+function genMultiplyDivideDecimals(difficulty = 'medium') {
+  if (difficulty === 'hard') {
+    const whole = pick([2, 4, 5, 10])
+    const quotient = randInt(10, 99) / 10
+    const a = +(quotient * whole).toFixed(2)
+    const { choices, answer } = mcqFrom(quotient.toFixed(1), () => (quotient + pick([-1, -0.5, 0.5, 1])).toFixed(1), (v) => v)
+    return {
+      subtopicId: 'multiply-divide-decimals',
+      type: 'mcq',
+      prompt: `${a.toFixed(2)} ÷ ${whole} = ?`,
+      choices,
+      answer,
+      hint: `Divide as you would with whole numbers, then place the decimal point in the same position.`,
+    }
+  }
+  const dp = difficulty === 'easy' ? 1 : 2
+  const a = difficulty === 'easy' ? randInt(10, 99) / 10 : randInt(100, 999) / 100
+  const whole = randInt(2, 9)
+  const result = +(a * whole).toFixed(2)
+  const { choices, answer } = mcqFrom(result, () => +(result + pick([-1, -0.5, 0.5, 1])).toFixed(2), (v) => v.toFixed(2))
+  return {
+    subtopicId: 'multiply-divide-decimals',
+    type: 'mcq',
+    prompt: `${a.toFixed(dp)} × ${whole} = ?`,
+    choices,
+    answer,
+    hint: `Multiply as you would with whole numbers, then place the decimal point in the same spot counting from the right.`,
+  }
+}
+
+function genDecimalWordProblems(difficulty = 'medium') {
+  const name = pick(WP_NAMES)
+
+  if (difficulty === 'hard') {
+    const price = randInt(150, 999) / 100
+    const qty = randInt(2, 6)
+    const total = +(price * qty).toFixed(2)
+    const paid = Math.ceil(total / 5) * 5
+    const change = +(paid - total).toFixed(2)
+    return {
+      subtopicId: 'word-problems-decimals',
+      type: 'input',
+      prompt: `${name} bought ${qty} notebooks at $${price.toFixed(2)} each and paid with $${paid.toFixed(2)}. How much change did ${name} get? (in dollars, e.g. 1.50)`,
+      answer: change.toFixed(2),
+      hint: `First find the total cost (${qty} × $${price.toFixed(2)} = $${total.toFixed(2)}), then subtract from $${paid.toFixed(2)}.`,
+    }
+  }
+
+  const price1 = randInt(100, 999) / 100
+  const price2 = randInt(100, 999) / 100
+  const total = +(price1 + price2).toFixed(2)
+  return {
+    subtopicId: 'word-problems-decimals',
+    type: 'input',
+    prompt: `${name} bought a book for $${price1.toFixed(2)} and a pen for $${price2.toFixed(2)}. How much did ${name} spend in total? (in dollars, e.g. 5.25)`,
+    answer: total.toFixed(2),
+    hint: `Add the two prices together, lining up the decimal points.`,
   }
 }
 
@@ -460,9 +798,9 @@ function genAngles(difficulty = 'medium') {
     const type = 'reflex'
     const { choices, answer } = mcqFrom(type, () => pick(['acute', 'right', 'obtuse', 'straight'].filter((t) => t !== type)), (v) => v)
     return {
-      subtopicId: 'angles',
+      subtopicId: 'angles-protractor',
       type: 'mcq',
-      prompt: `An angle measures ${angle}°. What type of angle is it?`,
+      prompt: `Using a protractor, you measure an angle as ${angle}°. What type of angle is it?`,
       choices,
       answer,
       hint: `A reflex angle is greater than 180° but less than 360°.`,
@@ -480,9 +818,9 @@ function genAngles(difficulty = 'medium') {
     (v) => v
   )
   return {
-    subtopicId: 'angles',
+    subtopicId: 'angles-protractor',
     type: 'mcq',
-    prompt: `An angle measures ${angle}°. What type of angle is it?`,
+    prompt: `Using a protractor, you measure an angle as ${angle}°. What type of angle is it?`,
     choices,
     answer,
     hint: `Acute < 90°, Right = 90°, Obtuse is between 90° and 180°, Straight = 180°.`,
@@ -508,7 +846,7 @@ function genLines(difficulty = 'medium') {
   const s = pick(pool)
   const { choices, answer } = mcqFrom(s.answer, () => pick(['Perpendicular', 'Parallel', 'Intersecting'].filter((t) => t !== s.answer)), (v) => v)
   return {
-    subtopicId: 'lines',
+    subtopicId: 'perpendicular-parallel',
     type: 'mcq',
     prompt: s.desc + ' What do we call these lines?',
     choices,
@@ -517,44 +855,143 @@ function genLines(difficulty = 'medium') {
   }
 }
 
-function genAreaPerimeter(difficulty = 'medium') {
-  if (difficulty === 'easy') {
-    const l = randInt(3, 8)
-    const w = randInt(2, 6)
-    const askArea = Math.random() < 0.5
-    if (askArea) {
-      const area = l * w
-      const { choices, answer } = mcqFrom(area, () => area + pick([-l, l, -w, w]))
-      return {
-        subtopicId: 'area-perimeter',
-        type: 'mcq',
-        prompt: `A rectangle has a length of ${l} cm and a width of ${w} cm. What is its area?`,
-        choices: choices.map((c) => `${c} cm²`),
-        answer: `${answer} cm²`,
-        hint: `Area of a rectangle = length × width = ${l} × ${w}.`,
-      }
-    }
-    const perimeter = 2 * (l + w)
-    const { choices, answer } = mcqFrom(perimeter, () => perimeter + pick([-4, -2, 2, 4]))
+function genSquaresRectangles(difficulty = 'medium') {
+  if (difficulty === 'hard') {
+    const l = randInt(4, 15)
+    const w = randInt(4, 12)
+    const areaVal = l * w
+    const { choices, answer } = mcqFrom(w, () => w + pick([-2, -1, 1, 2]))
     return {
-      subtopicId: 'area-perimeter',
+      subtopicId: 'squares-rectangles',
       type: 'mcq',
-      prompt: `A rectangle has a length of ${l} cm and a width of ${w} cm. What is its perimeter?`,
-      choices: choices.map((c) => `${c} cm`),
-      answer: `${answer} cm`,
-      hint: `Perimeter of a rectangle = 2 × (length + width).`,
+      prompt: `A rectangle has an area of ${areaVal} cm² and a length of ${l} cm. What is its width?`,
+      choices,
+      answer,
+      hint: `Width = Area ÷ Length (${areaVal} ÷ ${l}).`,
     }
   }
+  if (difficulty === 'medium') {
+    const side = randInt(3, 15)
+    const perimeter = side * 4
+    const { choices, answer } = mcqFrom(side, () => side + pick([-2, -1, 1, 2]))
+    return {
+      subtopicId: 'squares-rectangles',
+      type: 'mcq',
+      prompt: `A square has a perimeter of ${perimeter} cm. What is the length of one side?`,
+      choices,
+      answer,
+      hint: `A square has 4 equal sides, so side length = perimeter ÷ 4.`,
+    }
+  }
+  const side = randInt(3, 12)
+  const askPerimeter = Math.random() < 0.5
+  if (askPerimeter) {
+    const perimeter = side * 4
+    const { choices, answer } = mcqFrom(perimeter, () => perimeter + pick([-4, -2, 2, 4]))
+    return {
+      subtopicId: 'squares-rectangles',
+      type: 'mcq',
+      prompt: `A square has sides of ${side} cm. What is its perimeter?`,
+      choices: choices.map((c) => `${c} cm`),
+      answer: `${answer} cm`,
+      hint: `A square has 4 equal sides, so perimeter = 4 × side length.`,
+    }
+  }
+  const area = side * side
+  const { choices, answer } = mcqFrom(area, () => area + pick([-side, side, -4, 4]))
+  return {
+    subtopicId: 'squares-rectangles',
+    type: 'mcq',
+    prompt: `A square has sides of ${side} cm. What is its area?`,
+    choices: choices.map((c) => `${c} cm²`),
+    answer: `${answer} cm²`,
+    hint: `Area of a square = side × side.`,
+  }
+}
+
+const SYMMETRY_SHAPES = {
+  easy: [
+    { name: 'square', lines: 4 },
+    { name: 'rectangle (non-square)', lines: 2 },
+    { name: 'equilateral triangle', lines: 3 },
+  ],
+  medium: [
+    { name: 'regular pentagon', lines: 5 },
+    { name: 'regular hexagon', lines: 6 },
+    { name: 'isosceles triangle', lines: 1 },
+    { name: 'rhombus', lines: 2 },
+  ],
+  hard: [
+    { name: 'scalene triangle', lines: 0 },
+    { name: 'parallelogram (non-rectangle)', lines: 0 },
+    { name: 'regular octagon', lines: 8 },
+  ],
+}
+
+function genSymmetry(difficulty = 'medium') {
+  const pool = SYMMETRY_SHAPES[difficulty] || SYMMETRY_SHAPES.medium
+  const shape = pick(pool)
+  const { choices, answer } = mcqFrom(shape.lines, () => Math.max(0, shape.lines + pick([-2, -1, 1, 2])))
+  return {
+    subtopicId: 'symmetry',
+    type: 'mcq',
+    prompt: `How many lines of symmetry does a ${shape.name} have?`,
+    choices,
+    answer,
+    hint: `A line of symmetry divides a shape into two mirror-image halves. Try folding the shape in your mind along different lines.`,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// PERIMETER AND AREA
+// ---------------------------------------------------------------------------
+function genPerimeterRect(difficulty = 'medium') {
+  const [lMin, lMax] = difficulty === 'easy' ? [3, 8] : difficulty === 'hard' ? [12, 25] : [4, 15]
+  const [wMin, wMax] = difficulty === 'easy' ? [2, 6] : difficulty === 'hard' ? [8, 20] : [3, 12]
+  const l = randInt(lMin, lMax)
+  const w = randInt(wMin, wMax)
+  const perimeter = 2 * (l + w)
+  const { choices, answer } = mcqFrom(perimeter, () => perimeter + pick([-4, -2, 2, 4]))
+  return {
+    subtopicId: 'perimeter-squares-rectangles',
+    type: 'mcq',
+    prompt: `A rectangle has a length of ${l} cm and a width of ${w} cm. What is its perimeter?`,
+    choices: choices.map((c) => `${c} cm`),
+    answer: `${answer} cm`,
+    hint: `Perimeter of a rectangle = 2 × (length + width).`,
+  }
+}
+
+function genAreaRect(difficulty = 'medium') {
+  const [lMin, lMax] = difficulty === 'easy' ? [3, 8] : difficulty === 'hard' ? [12, 25] : [4, 15]
+  const [wMin, wMax] = difficulty === 'easy' ? [2, 6] : difficulty === 'hard' ? [8, 20] : [3, 12]
+  const l = randInt(lMin, lMax)
+  const w = randInt(wMin, wMax)
+  const area = l * w
+  const { choices, answer } = mcqFrom(area, () => area + pick([-l, l, -w, w]))
+  return {
+    subtopicId: 'area-squares-rectangles',
+    type: 'mcq',
+    prompt: `A rectangle has a length of ${l} cm and a width of ${w} cm. What is its area?`,
+    choices: choices.map((c) => `${c} cm²`),
+    answer: `${answer} cm²`,
+    hint: `Area of a rectangle = length × width.`,
+  }
+}
+
+function genAreaComposite(difficulty = 'medium') {
+  const [LMin, LMax] = difficulty === 'easy' ? [8, 12] : difficulty === 'hard' ? [14, 20] : [10, 16]
+  const [WMin, WMax] = difficulty === 'easy' ? [6, 10] : difficulty === 'hard' ? [10, 16] : [8, 14]
+  const L = randInt(LMin, LMax)
+  const W = randInt(WMin, WMax)
+  const notchL = randInt(2, Math.floor(L / 2))
+  const notchW = randInt(2, Math.floor(W / 2))
 
   if (difficulty === 'hard') {
-    const L = randInt(10, 18)
-    const W = randInt(8, 16)
-    const notchL = randInt(2, Math.floor(L / 2))
-    const notchW = randInt(2, Math.floor(W / 2))
     const perimeter = 2 * (L + W)
     const { choices, answer } = mcqFrom(perimeter, () => perimeter + pick([-2 * notchL, 2 * notchL, -2 * notchW, 2 * notchW]))
     return {
-      subtopicId: 'area-perimeter',
+      subtopicId: 'area-composite',
       type: 'mcq',
       prompt: `An L-shaped figure is made from a ${L} cm × ${W} cm rectangle with a ${notchL} cm × ${notchW} cm rectangular notch cut from one corner. What is the perimeter of the L-shape?`,
       choices: choices.map((c) => `${c} cm`),
@@ -562,43 +999,10 @@ function genAreaPerimeter(difficulty = 'medium') {
       hint: `Here's a trick: cutting a rectangular notch from a corner doesn't change the total perimeter! It's still 2 × (${L} + ${W}).`,
     }
   }
-
-  const askArea = Math.random() < 0.5
-  const isComposite = Math.random() < 0.4
-  if (!isComposite) {
-    const l = randInt(4, 15)
-    const w = randInt(3, 12)
-    if (askArea) {
-      const area = l * w
-      const { choices, answer } = mcqFrom(area, () => area + pick([-l, l, -w, w]))
-      return {
-        subtopicId: 'area-perimeter',
-        type: 'mcq',
-        prompt: `A rectangle has a length of ${l} cm and a width of ${w} cm. What is its area?`,
-        choices: choices.map((c) => `${c} cm²`),
-        answer: `${answer} cm²`,
-        hint: `Area of a rectangle = length × width = ${l} × ${w}.`,
-      }
-    }
-    const perimeter = 2 * (l + w)
-    const { choices, answer } = mcqFrom(perimeter, () => perimeter + pick([-4, -2, 2, 4]))
-    return {
-      subtopicId: 'area-perimeter',
-      type: 'mcq',
-      prompt: `A rectangle has a length of ${l} cm and a width of ${w} cm. What is its perimeter?`,
-      choices: choices.map((c) => `${c} cm`),
-      answer: `${answer} cm`,
-      hint: `Perimeter of a rectangle = 2 × (length + width).`,
-    }
-  }
-  const L = randInt(10, 16)
-  const W = randInt(8, 14)
-  const notchL = randInt(2, Math.floor(L / 2))
-  const notchW = randInt(2, Math.floor(W / 2))
   const area = L * W - notchL * notchW
   const { choices, answer } = mcqFrom(area, () => area + pick([-notchL * notchW, notchL * notchW, -4, 4]))
   return {
-    subtopicId: 'area-perimeter',
+    subtopicId: 'area-composite',
     type: 'mcq',
     prompt: `An L-shaped figure is made from a ${L} cm × ${W} cm rectangle with a ${notchL} cm × ${notchW} cm rectangular notch cut from one corner. What is the area of the L-shape?`,
     choices: choices.map((c) => `${c} cm²`),
@@ -608,7 +1012,7 @@ function genAreaPerimeter(difficulty = 'medium') {
 }
 
 // ---------------------------------------------------------------------------
-// DATA / GRAPHS
+// DATA ANALYSIS
 // ---------------------------------------------------------------------------
 function genBarGraphQuestion(difficulty = 'medium') {
   const categoryPool = ['Apples', 'Bananas', 'Oranges', 'Grapes', 'Mangoes', 'Pears']
@@ -647,12 +1051,12 @@ function genBarGraphQuestion(difficulty = 'medium') {
     (v) => `${v}`
   )
   return {
-    subtopicId: 'bar-graphs',
+    subtopicId: 'tables-bar-graphs',
     type: 'mcq',
     prompt,
     choices,
     answer,
-    hint: `Read each bar carefully and compare heights (values) before answering.`,
+    hint: `Read each bar (or table row) carefully and compare the values before answering.`,
     chartData: { type: 'bar', data },
   }
 }
@@ -718,57 +1122,9 @@ function genLineGraphQuestion(difficulty = 'medium') {
   }
 }
 
-function genDataAnalysis(difficulty = 'medium') {
-  const count = difficulty === 'easy' ? 4 : difficulty === 'hard' ? 7 : 5
-  const maxVal = difficulty === 'easy' ? 10 : difficulty === 'hard' ? 30 : 20
-  const metricPool = difficulty === 'easy' ? ['range'] : difficulty === 'hard' ? ['range', 'median', 'mode'] : ['range', 'median']
-  const metric = pick(metricPool)
-
-  if (metric === 'mode') {
-    const modeValue = randInt(1, maxVal)
-    const others = Array.from({ length: count - 2 }, () => {
-      let v = randInt(1, maxVal)
-      while (v === modeValue) v = randInt(1, maxVal)
-      return v
-    })
-    const nums = shuffle([modeValue, modeValue, ...others])
-    const { choices, answer } = mcqFrom(modeValue, () => pick(others.length ? others : [modeValue + 1]))
-    return {
-      subtopicId: 'data-analysis',
-      type: 'mcq',
-      prompt: `A data set has these values: ${nums.join(', ')}. What is the mode (the value that appears most often)?`,
-      choices,
-      answer,
-      hint: `Count how many times each number appears. The mode is the one that shows up the most.`,
-    }
-  }
-
-  const nums = Array.from({ length: count }, () => randInt(1, maxVal)).sort((a, b) => a - b)
-  let correct, prompt
-  if (metric === 'range') {
-    correct = nums[nums.length - 1] - nums[0]
-    prompt = `A data set has these values: ${nums.join(', ')}. What is the range (highest − lowest)?`
-  } else {
-    correct = nums[Math.floor(nums.length / 2)]
-    prompt = `A data set has these values: ${nums.join(', ')}. What is the median (middle value when sorted)?`
-  }
-  const { choices, answer } = mcqFrom(correct, () => correct + pick([-3, -2, -1, 1, 2, 3]))
-  return {
-    subtopicId: 'data-analysis',
-    type: 'mcq',
-    prompt,
-    choices,
-    answer,
-    hint: metric === 'range' ? `Subtract the smallest number from the largest.` : `Sort the numbers and find the one in the middle.`,
-  }
-}
-
 // ---------------------------------------------------------------------------
-// WORD PROBLEMS (Bar Modeling)
+// WORD PROBLEMS (Bar Modeling) — bonus
 // ---------------------------------------------------------------------------
-const WP_NAMES = ['Mei Ling', 'Ahmad', 'Priya', 'Wei Jie', 'Aisha', 'Kumar', 'Siti', 'Ryan']
-const WP_ITEMS = ['stickers', 'marbles', 'story books', 'seashells', 'trading cards', 'stamps']
-
 function genPartWhole(difficulty = 'medium') {
   const name = pick(WP_NAMES)
   const item = pick(WP_ITEMS)
@@ -951,7 +1307,7 @@ function genMultiStep(difficulty = 'medium') {
 }
 
 // ---------------------------------------------------------------------------
-// MATH OLYMPIAD PREP
+// MATH OLYMPIAD PREP — bonus
 // ---------------------------------------------------------------------------
 function genPatternsSequences(difficulty = 'medium') {
   if (difficulty === 'hard') {
@@ -1107,11 +1463,15 @@ function genCompetitionProblems(difficulty = 'medium') {
 // REGISTRY
 // ---------------------------------------------------------------------------
 const GENERATORS = {
-  'place-value': [genReadingNumbers, genRounding, genFactorsMultiples],
-  fractions: [genEquivalentFractions, genAddSubFractions, genMixedNumbers],
-  decimals: [genTenthsHundredths, genDecimalFractionConversion, genDecimalOperations],
-  geometry: [genAngles, genLines, genAreaPerimeter],
-  data: [genBarGraphQuestion, genLineGraphQuestion, genDataAnalysis],
+  'whole-numbers': [genNumbersTo100000, genRoundingEstimation],
+  'factors-multiples': [genFactorsCommonFactors, genMultiplesCommonMultiples, genPrimeComposite],
+  'multiplication-division': [genMultiply2Digit, genDivide1Digit, genMultDivWordProblems],
+  fractions: [genMixedNumbers, genCompareFractions, genAddSubUnlikeFractions, genFractionOfSet, genFractionWordProblems],
+  decimals: [genDecimalPlaceValue, genCompareDecimals, genRoundingDecimals],
+  'decimal-operations': [genAddSubDecimals, genMultiplyDivideDecimals, genDecimalWordProblems],
+  geometry: [genAngles, genLines, genSquaresRectangles, genSymmetry],
+  'perimeter-area': [genPerimeterRect, genAreaRect, genAreaComposite],
+  'data-analysis': [genBarGraphQuestion, genLineGraphQuestion],
   'word-problems': [genPartWhole, genComparison, genMultiStep],
   olympiad: [genPatternsSequences, genLogicPuzzles, genCompetitionProblems],
 }

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ClipboardList, Lock, Unlock, CheckCircle2 } from 'lucide-react'
-import { CHAPTERS, CHAPTER_ICONS } from '../../data/curriculum'
+import { CHAPTERS, CHAPTER_ICONS, LEVELS } from '../../data/curriculum'
 import { useApp } from '../../context/AppContext'
 
 export default function AssignmentManager() {
@@ -34,41 +34,52 @@ export default function AssignmentManager() {
         Choose which chapters make up tomorrow's Daily Quest, and lock any chapters you don't want the student practicing right now.
       </p>
 
-      <div className="space-y-2">
-        {CHAPTERS.map((chapter) => {
-          const Icon = CHAPTER_ICONS[chapter.icon]
-          const isAssigned = selected.includes(chapter.id)
-          const isLocked = locked.includes(chapter.id)
+      <div className="space-y-5">
+        {Object.entries(LEVELS).map(([levelKey, levelLabel]) => {
+          const chaptersInLevel = CHAPTERS.filter((c) => c.level === levelKey)
+          if (chaptersInLevel.length === 0) return null
           return (
-            <div
-              key={chapter.id}
-              className={`flex items-center gap-3 rounded-2xl border-2 p-3 transition-colors ${
-                isAssigned ? 'bg-indigo-50 border-indigo-200' : 'bg-white border-slate-100'
-              }`}
-            >
-              <div className={`p-2 rounded-xl bg-gradient-to-br ${chapter.gradient} shrink-0`}>
-                {Icon && <Icon size={18} className="text-white" />}
+            <div key={levelKey}>
+              <p className="text-xs font-bold uppercase tracking-wide text-slate-400 mb-2">{levelLabel}</p>
+              <div className="space-y-2">
+                {chaptersInLevel.map((chapter) => {
+                  const Icon = CHAPTER_ICONS[chapter.icon]
+                  const isAssigned = selected.includes(chapter.id)
+                  const isLocked = locked.includes(chapter.id)
+                  return (
+                    <div
+                      key={chapter.id}
+                      className={`flex items-center gap-3 rounded-2xl border-2 p-3 transition-colors ${
+                        isAssigned ? 'bg-indigo-50 border-indigo-200' : 'bg-white border-slate-100'
+                      }`}
+                    >
+                      <div className={`p-2 rounded-xl bg-gradient-to-br ${chapter.gradient} shrink-0`}>
+                        {Icon && <Icon size={18} className="text-white" />}
+                      </div>
+                      <span className="flex-1 font-bold text-slate-700 text-sm">{chapter.title}</span>
+
+                      <button
+                        onClick={() => toggleAssigned(chapter.id)}
+                        className={`text-xs font-bold px-3 py-1.5 rounded-full transition-colors ${
+                          isAssigned ? 'bg-indigo-500 text-white' : 'bg-slate-100 text-slate-500 hover:bg-indigo-100'
+                        }`}
+                      >
+                        {isAssigned ? 'Assigned' : 'Assign'}
+                      </button>
+
+                      <button
+                        onClick={() => toggleLocked(chapter.id)}
+                        className={`p-2 rounded-full transition-colors ${
+                          isLocked ? 'bg-rose-100 text-rose-500' : 'bg-slate-100 text-slate-400 hover:bg-rose-50'
+                        }`}
+                        title={isLocked ? 'Unlock chapter' : 'Lock chapter'}
+                      >
+                        {isLocked ? <Lock size={16} /> : <Unlock size={16} />}
+                      </button>
+                    </div>
+                  )
+                })}
               </div>
-              <span className="flex-1 font-bold text-slate-700 text-sm">{chapter.title}</span>
-
-              <button
-                onClick={() => toggleAssigned(chapter.id)}
-                className={`text-xs font-bold px-3 py-1.5 rounded-full transition-colors ${
-                  isAssigned ? 'bg-indigo-500 text-white' : 'bg-slate-100 text-slate-500 hover:bg-indigo-100'
-                }`}
-              >
-                {isAssigned ? 'Assigned' : 'Assign'}
-              </button>
-
-              <button
-                onClick={() => toggleLocked(chapter.id)}
-                className={`p-2 rounded-full transition-colors ${
-                  isLocked ? 'bg-rose-100 text-rose-500' : 'bg-slate-100 text-slate-400 hover:bg-rose-50'
-                }`}
-                title={isLocked ? 'Unlock chapter' : 'Lock chapter'}
-              >
-                {isLocked ? <Lock size={16} /> : <Unlock size={16} />}
-              </button>
             </div>
           )
         })}
