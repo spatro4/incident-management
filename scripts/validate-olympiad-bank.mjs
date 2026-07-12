@@ -4,8 +4,10 @@
 import { OLYMPIAD_BANK } from '../src/data/olympiadBank.js'
 
 let problems = 0
+let total = 0
 
 for (const [chapterId, questions] of Object.entries(OLYMPIAD_BANK)) {
+  total += questions.length
   if (questions.length !== 25) {
     console.log(`FAIL ${chapterId}: expected 25 questions, got ${questions.length}`)
     problems++
@@ -38,7 +40,7 @@ for (const [chapterId, questions] of Object.entries(OLYMPIAD_BANK)) {
 }
 
 if (problems === 0) {
-  console.log('OK: all 225 questions passed validation (unique prompts, well-formed answers/choices).')
+  console.log(`OK: all ${total} questions passed validation (unique prompts, well-formed answers/choices).`)
 } else {
   console.log(`${problems} problem(s) found.`)
   process.exit(1)

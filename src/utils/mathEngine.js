@@ -1623,6 +1623,355 @@ function genCombinatoricsCounting(difficulty = 'medium') {
 }
 
 // ---------------------------------------------------------------------------
+// OLYMPIAD-ONLY REASONING CATEGORIES (Logical Reasoning / Mathematical
+// Reasoning "extra" topics not covered by the regular syllabus). These are
+// always hard/competition difficulty — there is no easy/medium tier since
+// they only ever appear in the Olympiad Syllabus.
+// ---------------------------------------------------------------------------
+function ordinalSuffix(n) {
+  const j = n % 10
+  const k = n % 100
+  if (j === 1 && k !== 11) return 'st'
+  if (j === 2 && k !== 12) return 'nd'
+  if (j === 3 && k !== 13) return 'rd'
+  return 'th'
+}
+
+function genAnalogyClassification() {
+  const mode = pick(['analogy', 'classification'])
+  if (mode === 'analogy') {
+    const relations = [
+      { fn: (x) => x * 2, desc: 'double the number' },
+      { fn: (x) => x * 3, desc: 'triple the number' },
+      { fn: (x) => x + 5, desc: 'add 5' },
+      { fn: (x) => x * x, desc: 'square the number' },
+      { fn: (x) => x - 3, desc: 'subtract 3' },
+    ]
+    // Some (relation, a) pairs are ambiguous — e.g. tripling 3 and squaring 3
+    // both give 9, so the rule can't be determined from that one example.
+    // Retry until no other relation would explain the same evidence.
+    let rel, a, b
+    let guard = 0
+    do {
+      rel = pick(relations)
+      a = randInt(2, 9)
+      b = rel.fn(a)
+      guard += 1
+    } while (relations.some((r) => r !== rel && r.fn(a) === b) && guard < 30)
+    let c = randInt(2, 9)
+    while (c === a) c = randInt(2, 9)
+    const d = rel.fn(c)
+    const { choices, answer } = mcqFromExcluding(d, () => d + pick([-4, -3, -2, -1, 1, 2, 3, 4]), (v) => v === d)
+    return {
+      subtopicId: 'analogy-classification',
+      type: 'mcq',
+      prompt: `${a} is to ${b} as ${c} is to ?`,
+      choices,
+      answer,
+      hint: `Find the rule that changes ${a} into ${b} (hint: ${rel.desc}), then apply the same rule to ${c}.`,
+    }
+  }
+  const groups = [
+    { category: 'even numbers', items: [2, 4, 6, 8, 10, 12], oddOneOutPool: [3, 5, 7, 9, 11] },
+    { category: 'odd numbers', items: [3, 5, 7, 9, 11, 13], oddOneOutPool: [2, 4, 6, 8, 10] },
+    { category: 'multiples of 5', items: [5, 10, 15, 20, 25, 30], oddOneOutPool: [12, 18, 22, 27] },
+    { category: 'square numbers', items: [1, 4, 9, 16, 25, 36], oddOneOutPool: [10, 20, 15, 30] },
+    { category: 'prime numbers', items: [2, 3, 5, 7, 11, 13], oddOneOutPool: [4, 6, 8, 9, 10] },
+  ]
+  const group = pick(groups)
+  const three = shuffle(group.items).slice(0, 3)
+  const oddOne = pick(group.oddOneOutPool)
+  const choices = shuffle([...three, oddOne]).map(String)
+  return {
+    subtopicId: 'analogy-classification',
+    type: 'mcq',
+    prompt: `Three of these numbers belong to the same group (${group.category}). Which one does NOT belong?`,
+    choices,
+    answer: String(oddOne),
+    hint: `Check which numbers are ${group.category} — the one that doesn't fit is the odd one out.`,
+  }
+}
+
+function genCodingDecoding() {
+  const shift = pick([1, 2, 3, -1, -2, -3])
+  const words = ['CAT', 'DOG', 'SUN', 'BAT', 'PEN', 'CUP', 'HAT', 'BOX', 'RUN', 'MAP']
+  const codeWord = pick(words)
+  let targetWord = pick(words)
+  while (targetWord === codeWord) targetWord = pick(words)
+  const shiftLetter = (ch, s) => {
+    const code = (((ch.charCodeAt(0) - 65 + s) % 26) + 26) % 26
+    return String.fromCharCode(code + 65)
+  }
+  const encode = (word) => word.split('').map((ch) => shiftLetter(ch, shift)).join('')
+  const codedExample = encode(codeWord)
+  const correctAnswer = encode(targetWord)
+  const { choices, answer } = mcqFrom(correctAnswer, () => encode(pick(words.filter((w) => w !== targetWord))), (v) => v)
+  return {
+    subtopicId: 'coding-decoding',
+    type: 'mcq',
+    prompt: `In a code language, ${codeWord} is written as ${codedExample}. Using the same code, how is ${targetWord} written?`,
+    choices,
+    answer,
+    hint: `Find how much each letter shifts (compare ${codeWord} to ${codedExample}), then apply the same shift to each letter of ${targetWord}.`,
+  }
+}
+
+function genMirrorEmbedded() {
+  const symmetric = ['A', 'H', 'I', 'M', 'O', 'T', 'U', 'V', 'W', 'X', 'Y']
+  const asymmetric = ['B', 'C', 'D', 'E', 'F', 'G', 'J', 'K', 'L', 'N', 'P', 'Q', 'R', 'S', 'Z']
+  const askSymmetric = Math.random() < 0.5
+  if (askSymmetric) {
+    const correct = pick(symmetric)
+    const { choices, answer } = mcqFrom(correct, () => pick(asymmetric), (v) => v)
+    return {
+      subtopicId: 'mirror-embedded-figures',
+      type: 'mcq',
+      prompt: `Which of these letters looks exactly the same when reflected in a mirror (has a vertical line of symmetry)?`,
+      choices,
+      answer,
+      hint: `Imagine folding the letter down the middle vertically — if both halves match perfectly, it has a vertical line of symmetry.`,
+    }
+  }
+  const correct = pick(asymmetric)
+  const { choices, answer } = mcqFrom(correct, () => pick(symmetric), (v) => v)
+  return {
+    subtopicId: 'mirror-embedded-figures',
+    type: 'mcq',
+    prompt: `Which of these letters does NOT look the same when reflected in a mirror?`,
+    choices,
+    answer,
+    hint: `A letter has a vertical line of symmetry if folding it down the middle makes both halves match exactly. Look for one where they don't.`,
+  }
+}
+
+function genAlphabetRanking() {
+  const mode = pick(['alphabet', 'ranking'])
+  if (mode === 'alphabet') {
+    const steps = randInt(2, 5)
+    const direction = pick(['after', 'before'])
+    const startIdx = direction === 'after' ? randInt(0, 25 - steps) : randInt(steps, 25)
+    const targetIdx = direction === 'after' ? startIdx + steps : startIdx - steps
+    const startLetter = String.fromCharCode(65 + startIdx)
+    const correct = String.fromCharCode(65 + targetIdx)
+    const { choices, answer } = mcqFrom(
+      correct,
+      () => {
+        const d = Math.max(0, Math.min(25, targetIdx + pick([-2, -1, 1, 2])))
+        return String.fromCharCode(65 + d)
+      },
+      (v) => v
+    )
+    return {
+      subtopicId: 'alphabet-ranking',
+      type: 'mcq',
+      prompt: `What letter comes ${steps} positions ${direction} ${startLetter} in the alphabet?`,
+      choices,
+      answer,
+      hint: `Count ${steps} letters ${direction === 'after' ? 'forward' : 'backward'} from ${startLetter}.`,
+    }
+  }
+  const fromFront = randInt(3, 10)
+  const fromBack = randInt(3, 10)
+  const total = fromFront + fromBack - 1
+  const name = pick(WP_NAMES)
+  const { choices, answer } = mcqFrom(total, () => total + pick([-2, -1, 1, 2]))
+  return {
+    subtopicId: 'alphabet-ranking',
+    type: 'mcq',
+    prompt: `In a queue, ${name} is ${fromFront}${ordinalSuffix(fromFront)} from the front and ${fromBack}${ordinalSuffix(fromBack)} from the back. How many people are in the queue in total?`,
+    choices,
+    answer,
+    hint: `Total = (position from front) + (position from back) − 1, since ${name} is counted in both.`,
+  }
+}
+
+const RIGHT_TRIANGLES = [[3, 4, 5], [6, 8, 10], [5, 12, 13], [9, 12, 15], [8, 15, 17]]
+
+function genDirectionSense() {
+  const mode = pick(['distance', 'facing'])
+  const name = pick(WP_NAMES)
+  if (mode === 'distance') {
+    const [a, b, c] = pick(RIGHT_TRIANGLES)
+    const dir1 = pick(['North', 'South'])
+    const dir2 = pick(['East', 'West'])
+    const { choices, answer } = mcqFrom(c, () => c + pick([-2, -1, 1, 2]))
+    return {
+      subtopicId: 'direction-sense',
+      type: 'mcq',
+      prompt: `${name} walks ${a} m ${dir1}, then ${b} m ${dir2}. How far is ${name} from the starting point (in a straight line)?`,
+      choices: choices.map((v) => `${v} m`),
+      answer: `${answer} m`,
+      hint: `This forms a right angle. Use the Pythagorean triple ${a}-${b}-${c}: the straight-line distance is ${c} m.`,
+    }
+  }
+  const directions = ['North', 'East', 'South', 'West']
+  const startIdx = randInt(0, 3)
+  const turns = randInt(1, 3)
+  const turnType = pick(['right', 'left'])
+  let idx = startIdx
+  for (let i = 0; i < turns; i++) {
+    idx = turnType === 'right' ? (idx + 1) % 4 : (idx + 3) % 4
+  }
+  const facing = directions[idx]
+  const { choices, answer } = mcqFrom(facing, () => pick(directions.filter((d) => d !== facing)), (v) => v)
+  return {
+    subtopicId: 'direction-sense',
+    type: 'mcq',
+    prompt: `${name} starts facing ${directions[startIdx]}. ${name} turns ${turnType} ${turns} time${turns > 1 ? 's' : ''} (each turn is 90°). Which direction is ${name} facing now?`,
+    choices,
+    answer,
+    hint: `Each 90° turn ${turnType === 'right' ? 'moves one step clockwise' : 'moves one step counter-clockwise'} through North → East → South → West → North.`,
+  }
+}
+
+const MEASUREMENT_UNITS = [
+  { big: 'm', small: 'cm', factor: 100 },
+  { big: 'kg', small: 'g', factor: 1000 },
+  { big: 'L', small: 'ml', factor: 1000 },
+]
+
+function genMeasurement() {
+  const unit = pick(MEASUREMENT_UNITS)
+  const toSmall = Math.random() < 0.5
+  if (toSmall) {
+    const bigVal = randInt(2, 9)
+    const correct = bigVal * unit.factor
+    const { choices, answer } = mcqFrom(correct, () => correct + pick([-unit.factor, unit.factor, -unit.factor / 2, unit.factor / 2]))
+    return {
+      subtopicId: 'measurement',
+      type: 'mcq',
+      prompt: `Convert ${bigVal} ${unit.big} to ${unit.small}.`,
+      choices: choices.map((v) => `${v} ${unit.small}`),
+      answer: `${answer} ${unit.small}`,
+      hint: `1 ${unit.big} = ${unit.factor} ${unit.small}, so multiply by ${unit.factor}.`,
+    }
+  }
+  const multiplier = randInt(2, 9)
+  const smallVal = multiplier * unit.factor
+  const { choices, answer } = mcqFrom(multiplier, () => multiplier + pick([-2, -1, 1, 2]))
+  return {
+    subtopicId: 'measurement',
+    type: 'mcq',
+    prompt: `Convert ${smallVal} ${unit.small} to ${unit.big}.`,
+    choices: choices.map((v) => `${v} ${unit.big}`),
+    answer: `${answer} ${unit.big}`,
+    hint: `${unit.factor} ${unit.small} = 1 ${unit.big}, so divide by ${unit.factor}.`,
+  }
+}
+
+const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
+function genTimeCalendar() {
+  const mode = pick(['elapsed-time', 'day-of-week'])
+  if (mode === 'elapsed-time') {
+    const startHour = randInt(1, 12)
+    const startMin = pick([0, 15, 30, 45])
+    const durationHours = randInt(1, 3)
+    const durationMins = pick([0, 15, 30, 45])
+    const totalMin = startHour * 60 + startMin + durationHours * 60 + durationMins
+    const fmt = (mins) => {
+      const h = Math.floor((((mins % 720) + 720) % 720) / 60) || 12
+      const m = ((mins % 60) + 60) % 60
+      return `${h}:${String(m).padStart(2, '0')}`
+    }
+    const correct = fmt(totalMin)
+    const { choices, answer } = mcqFromExcluding(correct, () => fmt(totalMin + pick([-30, -15, 15, 30])), (v) => v === correct, (v) => v)
+    return {
+      subtopicId: 'time-calendar',
+      type: 'mcq',
+      prompt: `A movie starts at ${fmt(startHour * 60 + startMin)} and lasts ${durationHours} hour${durationHours > 1 ? 's' : ''}${
+        durationMins > 0 ? ` and ${durationMins} minutes` : ''
+      }. What time does it end?`,
+      choices,
+      answer,
+      hint: `Add the duration to the start time. First add the hours, then the minutes (regrouping 60 minutes into an hour if needed).`,
+    }
+  }
+  const startDay = randInt(0, 6)
+  const daysLater = randInt(3, 60)
+  const endDay = (startDay + daysLater) % 7
+  const { choices, answer } = mcqFrom(DAYS[endDay], () => pick(DAYS.filter((d) => d !== DAYS[endDay])), (v) => v)
+  return {
+    subtopicId: 'time-calendar',
+    type: 'mcq',
+    prompt: `If today is ${DAYS[startDay]}, what day of the week will it be in ${daysLater} days?`,
+    choices,
+    answer,
+    hint: `Divide ${daysLater} by 7 and look at the remainder — that's how many days of the week to count forward from ${DAYS[startDay]}.`,
+  }
+}
+
+function genMoney() {
+  const mode = pick(['change', 'total-coins'])
+  const name = pick(WP_NAMES)
+  if (mode === 'change') {
+    const price = randInt(150, 950) / 100
+    let paid = Math.ceil(price / 5) * 5
+    if (paid <= price) paid += 5
+    const change = +(paid - price).toFixed(2)
+    return {
+      subtopicId: 'money',
+      type: 'input',
+      prompt: `${name} buys a toy for $${price.toFixed(2)} and pays with a $${paid.toFixed(2)} note. How much change should ${name} get? (e.g. 2.50)`,
+      answer: change.toFixed(2),
+      hint: `Subtract the price from the amount paid: $${paid.toFixed(2)} − $${price.toFixed(2)}.`,
+    }
+  }
+  const coins = [
+    { value: 0.05, name: '5¢' },
+    { value: 0.1, name: '10¢' },
+    { value: 0.25, name: '25¢' },
+    { value: 1, name: '$1' },
+  ]
+  const coin = pick(coins)
+  const count = randInt(3, 12)
+  const total = +(coin.value * count).toFixed(2)
+  return {
+    subtopicId: 'money',
+    type: 'input',
+    prompt: `${name} has ${count} coins worth ${coin.name} each. How much money does ${name} have in total? (in dollars, e.g. 1.25)`,
+    answer: total.toFixed(2),
+    hint: `Multiply the number of coins (${count}) by the value of each coin (${coin.name}).`,
+  }
+}
+
+function genComputationOperations() {
+  const a = randInt(2, 12)
+  const b = randInt(2, 12)
+  const c = randInt(2, 9)
+  const useAddition = Math.random() < 0.5
+  if (useAddition) {
+    const result = a + b * c
+    const wrongOrder = (a + b) * c
+    const { choices, answer } = mcqFromExcluding(result, () => Math.max(0, wrongOrder + pick([-3, -2, -1, 0, 1, 2, 3])), (v) => v === result)
+    return {
+      subtopicId: 'computation-operations',
+      type: 'mcq',
+      prompt: `${a} + ${b} × ${c} = ?`,
+      choices,
+      answer,
+      hint: `Remember: multiplication comes before addition. Work out ${b} × ${c} first, then add ${a}.`,
+    }
+  }
+  const bigA = randInt(30, 80)
+  const result = bigA - b * c
+  const wrongOrder = Math.max(0, (bigA - b) * c)
+  const { choices, answer } = mcqFromExcluding(
+    Math.max(0, result),
+    () => Math.max(0, wrongOrder + pick([-3, -2, -1, 1, 2, 3])),
+    (v) => v === result
+  )
+  return {
+    subtopicId: 'computation-operations',
+    type: 'mcq',
+    prompt: `${bigA} - ${b} × ${c} = ?`,
+    choices,
+    answer,
+    hint: `Do the multiplication first (${b} × ${c}), then subtract the result from ${bigA}.`,
+  }
+}
+
+// ---------------------------------------------------------------------------
 // REGISTRY
 // ---------------------------------------------------------------------------
 const GENERATORS = {
@@ -1639,24 +1988,55 @@ const GENERATORS = {
 }
 
 // ---------------------------------------------------------------------------
-// OLYMPIAD SYLLABUS — fixed 25-question "challenge papers", one per regular
-// syllabus chapter. Unlike the regular chapters, these are baked into a
-// static bank (src/data/olympiadBank.js via scripts/gen-olympiad-bank.mjs)
-// rather than re-randomized every session, so teachers have a stable answer
-// key. Every source generator below always runs at 'hard' difficulty and
-// each chapter mixes in whichever generic Olympiad-style generator (number
-// theory, geometry/spatial, combinatorics, patterns, logic, competition
-// word problems) best fits that topic.
+// OLYMPIAD SYLLABUS — fixed 25-question "challenge papers", organized into
+// the three standard sections used by Grade 4 math olympiad exams (SOF-IMO,
+// NSO, and similar): Logical Reasoning, Mathematical Reasoning, and an
+// Achievers Section of higher-order-thinking problems. Unlike the regular
+// syllabus chapters, these are baked into a static bank
+// (src/data/olympiadBank.js via scripts/gen-olympiad-bank.mjs) rather than
+// re-randomized every session, so teachers have a stable answer key. Every
+// generator below always runs at 'hard' difficulty.
 export const OLYMPIAD_CHAPTER_GENERATORS = {
-  'whole-numbers': [genNumbersTo100000, genRoundingEstimation, genPatternsSequences, genLogicPuzzles],
-  'factors-multiples': [genFactorsCommonFactors, genMultiplesCommonMultiples, genPrimeComposite, genNumberTheoryPuzzles],
-  'multiplication-division': [genMultiply2Digit, genDivide1Digit, genMultDivWordProblems, genCompetitionProblems],
-  fractions: [genMixedNumbers, genCompareFractions, genAddSubUnlikeFractions, genFractionOfSet, genFractionWordProblems],
-  decimals: [genDecimalPlaceValue, genCompareDecimals, genRoundingDecimals],
-  'decimal-operations': [genAddSubDecimals, genMultiplyDivideDecimals, genDecimalWordProblems],
-  geometry: [genAngles, genLines, genSquaresRectangles, genSymmetry, genGeometrySpatial],
-  'perimeter-area': [genPerimeterRect, genAreaRect, genAreaComposite, genGeometrySpatial],
-  'data-analysis': [genBarGraphQuestion, genLineGraphQuestion, genCombinatoricsCounting],
+  'logical-reasoning': [
+    genPatternsSequences, // Patterns and Series
+    genAnalogyClassification, // Analogy and Classification
+    genCodingDecoding, // Coding-Decoding
+    genMirrorEmbedded, // Mirror Images and Embedded Figures
+    genAlphabetRanking, // Alphabet and Ranking Test
+    genDirectionSense, // Direction Sense Test
+  ],
+  'mathematical-reasoning': [
+    genNumbersTo100000, // Number System and Number Sense
+    genPrimeComposite,
+    genRoundingEstimation,
+    genFactorsCommonFactors, // Factors and Multiples
+    genMultiplesCommonMultiples,
+    genNumberTheoryPuzzles,
+    genComputationOperations, // Computation Operations
+    genMixedNumbers, // Fractions and Decimals
+    genCompareFractions,
+    genAddSubUnlikeFractions,
+    genDecimalPlaceValue,
+    genCompareDecimals,
+    genMeasurement, // Measurement
+    genTimeCalendar, // Time and Calendar
+    genMoney, // Money
+    genAngles, // Geometry
+    genLines,
+    genSquaresRectangles,
+    genSymmetry,
+    genGeometrySpatial,
+    genPerimeterRect, // Perimeter and Area
+    genAreaRect,
+    genAreaComposite,
+    genBarGraphQuestion, // Data Handling
+    genLineGraphQuestion,
+    genCombinatoricsCounting,
+  ],
+  achievers: [
+    genCompetitionProblems, // Higher-Order Thinking Skills (HOTs)
+    genLogicPuzzles,
+  ],
 }
 
 /**
@@ -1684,7 +2064,6 @@ export function generateOlympiadPaper(chapterId, count = 25) {
       ...q,
       id: `olympiad-${chapterId}-${questions.length + 1}`,
       chapterId: `olympiad-${chapterId}`,
-      subtopicId: `olympiad-${chapterId}-set`,
       difficulty: 'hard',
     })
   }

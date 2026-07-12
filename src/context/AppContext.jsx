@@ -1,6 +1,16 @@
 import { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react'
 import { loadState, saveState, resetState, recordQuestResult, setAssignment, xpIntoLevel, todayISO } from '../utils/storage'
-import { getSessionUsername, clearSession, signUp as authSignUp, logIn as authLogIn, listUsers, getDisplayName } from '../utils/auth'
+import {
+  getSessionUsername,
+  clearSession,
+  signUp as authSignUp,
+  logIn as authLogIn,
+  listUsers,
+  getDisplayName,
+  getSecurityQuestion,
+  resetPasswordWithSecurityAnswer as authResetWithSecurityAnswer,
+  resetPasswordAsTeacher as authResetAsTeacher,
+} from '../utils/auth'
 
 const AppContext = createContext(null)
 
@@ -28,10 +38,10 @@ export function AppProvider({ children }) {
     if (activeUsername && state) saveState(activeUsername, state)
   }, [state, activeUsername])
 
-  const signUp = useCallback(async (username, displayName, password) => {
+  const signUp = useCallback(async (username, displayName, password, securityQuestion, securityAnswer) => {
     setAuthError('')
     try {
-      const normalized = await authSignUp(username, displayName, password)
+      const normalized = await authSignUp(username, displayName, password, securityQuestion, securityAnswer)
       setUsers(listUsers())
       setSessionUsername(normalized)
       setActiveUsername(normalized)
@@ -65,6 +75,32 @@ export function AppProvider({ children }) {
   // the actual student login session.
   const viewAsStudent = useCallback((username) => {
     setActiveUsername(username)
+  }, [])
+
+  const lookupSecurityQuestion = useCallback((username) => getSecurityQuestion(username), [])
+
+  const resetPasswordWithSecurityAnswer = useCallback(async (username, securityAnswer, newPassword) => {
+    setAuthError('')
+    try {
+      await authResetWithSecurityAnswer(username, securityAnswer, newPassword)
+      return true
+    } catch (e) {
+      setAuthError(e.message)
+      return false
+    }
+  }, [])
+
+  // Teacher-only: reset a student's password without needing their old
+  // password or security answer.
+  const resetPasswordAsTeacher = useCallback(async (username, newPassword) => {
+    setAuthError('')
+    try {
+      await authResetAsTeacher(username, newPassword)
+      return true
+    } catch (e) {
+      setAuthError(e.message)
+      return false
+    }
   }, [])
 
   const submitQuestResult = useCallback((result) => {
@@ -106,6 +142,9 @@ export function AppProvider({ children }) {
       logIn,
       logOut,
       viewAsStudent,
+      lookupSecurityQuestion,
+      resetPasswordWithSecurityAnswer,
+      resetPasswordAsTeacher,
     }),
     [
       state,
@@ -123,6 +162,9 @@ export function AppProvider({ children }) {
       logIn,
       logOut,
       viewAsStudent,
+      lookupSecurityQuestion,
+      resetPasswordWithSecurityAnswer,
+      resetPasswordAsTeacher,
     ]
   )
 

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { LayoutDashboard, ClipboardList, History, RefreshCcw, Users, KeyRound } from 'lucide-react'
+import { LayoutDashboard, ClipboardList, History, RefreshCcw, Users, KeyRound, CheckCircle2 } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import TeacherLogin from './TeacherLogin'
 import AnalyticsCharts from './AnalyticsCharts'
@@ -15,9 +15,12 @@ const TABS = [
 ]
 
 export default function TeacherDashboard() {
-  const { state, resetProgress, users, activeUsername, viewAsStudent } = useApp()
+  const { state, resetProgress, users, activeUsername, viewAsStudent, resetPasswordAsTeacher, authError } = useApp()
   const [authed, setAuthed] = useState(false)
   const [tab, setTab] = useState('analytics')
+  const [showPasswordPanel, setShowPasswordPanel] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [passwordResetDone, setPasswordResetDone] = useState(false)
 
   if (!authed) {
     return <TeacherLogin onAuthenticated={() => setAuthed(true)} />
@@ -33,6 +36,20 @@ export default function TeacherDashboard() {
         </p>
       </div>
     )
+  }
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault()
+    setPasswordResetDone(false)
+    const ok = await resetPasswordAsTeacher(activeUsername, newPassword)
+    if (ok) {
+      setPasswordResetDone(true)
+      setNewPassword('')
+      setTimeout(() => {
+        setShowPasswordPanel(false)
+        setPasswordResetDone(false)
+      }, 2000)
+    }
   }
 
   return (
@@ -52,7 +69,10 @@ export default function TeacherDashboard() {
             <Users size={16} className="text-white/70" />
             <select
               value={activeUsername || ''}
-              onChange={(e) => viewAsStudent(e.target.value)}
+              onChange={(e) => {
+                viewAsStudent(e.target.value)
+                setShowPasswordPanel(false)
+              }}
               className="bg-transparent text-sm font-bold outline-none [&>option]:text-slate-800"
             >
               {users.map((u) => (
@@ -63,6 +83,12 @@ export default function TeacherDashboard() {
             </select>
           </div>
           <button
+            onClick={() => setShowPasswordPanel((v) => !v)}
+            className="btn-chunky bg-slate-600 text-white text-sm px-4 py-2 flex items-center gap-2"
+          >
+            <KeyRound size={16} /> Reset Password
+          </button>
+          <button
             onClick={() => {
               if (confirm(`Reset ${state?.student.name || 'this student'}'s progress? This cannot be undone.`)) resetProgress()
             }}
@@ -72,6 +98,37 @@ export default function TeacherDashboard() {
           </button>
         </div>
       </div>
+
+      {showPasswordPanel && (
+        <div className="card-playful p-5">
+          <h3 className="font-display font-bold text-slate-700 mb-1 flex items-center gap-2">
+            <KeyRound size={18} className="text-slate-700" /> Reset Password for {state?.student.name || activeUsername}
+          </h3>
+          <p className="text-sm text-slate-400 mb-3">
+            As the teacher, you can set a new password directly — no security question needed. Share it with the student so they can log
+            back in.
+          </p>
+          {passwordResetDone ? (
+            <p className="text-emerald-600 font-bold text-sm flex items-center gap-2">
+              <CheckCircle2 size={18} /> Password updated!
+            </p>
+          ) : (
+            <form onSubmit={handleResetPassword} className="flex flex-col sm:flex-row gap-3">
+              <input
+                type="text"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="New password (min 4 characters)"
+                className="flex-1 rounded-2xl border-4 border-slate-200 focus:border-indigo-300 outline-none px-4 py-2.5 font-bold"
+              />
+              <button type="submit" className="btn-chunky bg-slate-800 text-white px-6 py-2.5 whitespace-nowrap">
+                Set New Password
+              </button>
+            </form>
+          )}
+          {authError && !passwordResetDone && <p className="text-rose-500 text-xs font-bold mt-2">{authError}</p>}
+        </div>
+      )}
 
       <div className="flex gap-2 overflow-x-auto">
         {TABS.map((t) => {

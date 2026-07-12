@@ -13,6 +13,8 @@ import {
   BarChart3,
   Blocks,
   Trophy,
+  Brain,
+  Award,
 } from 'lucide-react'
 
 export const DIFFICULTIES = ['easy', 'medium', 'hard']
@@ -32,23 +34,77 @@ export const LEVELS = {
   olympiad: '🏆 Olympiad Syllabus — Challenge Papers',
 }
 
-// Fixed 25-question Olympiad "papers" — one per Grade 4 syllabus chapter.
-// Unlike the regular syllabus chapters below, these do not use the random
-// question generator: they're static, curated, uniformly hard/advanced sets
-// with a stable answer key (see src/data/olympiadBank.js). This keeps a
-// clear line between the Grade 4 syllabus (practiced with fresh random
-// questions every time) and the Olympiad syllabus (fixed challenge papers,
-// same 25 questions and answers every attempt).
+// Fixed 25-question Olympiad "papers", organized into the three standard
+// sections used by real Grade 4 math olympiad exams (SOF-IMO, NSO, and
+// similar): Logical Reasoning, Mathematical Reasoning, and an Achievers
+// Section of higher-order-thinking problems. Unlike the regular syllabus
+// chapters above, these do not use the random question generator: they're
+// static, curated, uniformly hard/advanced sets with a stable answer key
+// (see src/data/olympiadBank.js). This keeps a clear line between the
+// Grade 4 syllabus (practiced with fresh random questions every time) and
+// the Olympiad syllabus (fixed challenge papers, same 25 questions and
+// answers every attempt).
 export const OLYMPIAD_CHAPTERS = [
-  { sourceId: 'whole-numbers', title: 'Whole Numbers', icon: 'Hash', gradient: 'from-slate-700 to-slate-900' },
-  { sourceId: 'factors-multiples', title: 'Multiples and Factors', icon: 'Grid3x3', gradient: 'from-slate-700 to-slate-900' },
-  { sourceId: 'multiplication-division', title: 'Multiplication and Division', icon: 'Calculator', gradient: 'from-slate-700 to-slate-900' },
-  { sourceId: 'fractions', title: 'Fractions', icon: 'PieChart', gradient: 'from-slate-700 to-slate-900' },
-  { sourceId: 'decimals', title: 'Decimals', icon: 'Percent', gradient: 'from-slate-700 to-slate-900' },
-  { sourceId: 'decimal-operations', title: 'Decimals Operations', icon: 'Sigma', gradient: 'from-slate-700 to-slate-900' },
-  { sourceId: 'geometry', title: 'Geometry', icon: 'Shapes', gradient: 'from-slate-700 to-slate-900' },
-  { sourceId: 'perimeter-area', title: 'Perimeter and Area', icon: 'Ruler', gradient: 'from-slate-700 to-slate-900' },
-  { sourceId: 'data-analysis', title: 'Data Analysis', icon: 'BarChart3', gradient: 'from-slate-700 to-slate-900' },
+  {
+    sourceId: 'logical-reasoning',
+    title: 'Logical Reasoning',
+    icon: 'Brain',
+    gradient: 'from-slate-700 to-slate-900',
+    description:
+      '25 fixed, competition-level questions: patterns & series, analogy & classification, coding-decoding, mirror images, alphabet & ranking, direction sense.',
+    subtopics: [
+      { id: 'patterns-sequences', label: 'Patterns and Series' },
+      { id: 'analogy-classification', label: 'Analogy and Classification' },
+      { id: 'coding-decoding', label: 'Coding-Decoding' },
+      { id: 'mirror-embedded-figures', label: 'Mirror Images and Embedded Figures' },
+      { id: 'alphabet-ranking', label: 'Alphabet and Ranking Test' },
+      { id: 'direction-sense', label: 'Direction Sense Test' },
+    ],
+  },
+  {
+    sourceId: 'mathematical-reasoning',
+    title: 'Mathematical Reasoning',
+    icon: 'Calculator',
+    gradient: 'from-slate-700 to-slate-900',
+    description:
+      '25 fixed, competition-level questions spanning number sense, factors & multiples, computation, fractions & decimals, measurement, time, money, geometry, perimeter & area, and data handling.',
+    subtopics: [
+      { id: 'numbers-to-100000', label: 'Number System and Number Sense' },
+      { id: 'prime-composite', label: 'Number System and Number Sense' },
+      { id: 'rounding-estimation', label: 'Number System and Number Sense' },
+      { id: 'factors-common-factors', label: 'Factors and Multiples' },
+      { id: 'multiples-common-multiples', label: 'Factors and Multiples' },
+      { id: 'number-theory-puzzles', label: 'Factors and Multiples' },
+      { id: 'computation-operations', label: 'Computation Operations' },
+      { id: 'mixed-improper', label: 'Fractions and Decimals' },
+      { id: 'comparing-ordering-fractions', label: 'Fractions and Decimals' },
+      { id: 'add-sub-unlike', label: 'Fractions and Decimals' },
+      { id: 'tenths-hundredths-thousandths', label: 'Fractions and Decimals' },
+      { id: 'comparing-ordering-decimals', label: 'Fractions and Decimals' },
+      { id: 'measurement', label: 'Measurement' },
+      { id: 'time-calendar', label: 'Time and Calendar' },
+      { id: 'money', label: 'Money' },
+      { id: 'angles-protractor', label: 'Geometry' },
+      { id: 'perpendicular-parallel', label: 'Geometry' },
+      { id: 'squares-rectangles', label: 'Geometry' },
+      { id: 'symmetry', label: 'Geometry' },
+      { id: 'geometry-spatial', label: 'Geometry' },
+      { id: 'perimeter-squares-rectangles', label: 'Perimeter and Area' },
+      { id: 'area-squares-rectangles', label: 'Perimeter and Area' },
+      { id: 'area-composite', label: 'Perimeter and Area' },
+      { id: 'tables-bar-graphs', label: 'Data Handling' },
+      { id: 'line-graphs', label: 'Data Handling' },
+      { id: 'combinatorics-counting', label: 'Data Handling' },
+    ],
+  },
+  {
+    sourceId: 'achievers',
+    title: 'Achievers Section',
+    icon: 'Award',
+    gradient: 'from-slate-700 to-slate-900',
+    description: '25 fixed, extra-hard Higher-Order Thinking Skills (HOTs) questions — the toughest section, mixing everything above.',
+    subtopics: [{ id: 'competition-problems', label: 'Higher-Order Thinking Skills (HOTs)' }, { id: 'logic-puzzles', label: 'Higher-Order Thinking Skills (HOTs)' }],
+  },
 ].map((c, i) => ({
   id: `olympiad-${c.sourceId}`,
   sourceId: c.sourceId,
@@ -59,8 +115,8 @@ export const OLYMPIAD_CHAPTERS = [
   icon: c.icon,
   color: 'candy.yellow',
   gradient: c.gradient,
-  description: `25 fixed, competition-level challenge questions on ${c.title}. Same difficulty as real Grade 4 math Olympiad papers.`,
-  subtopics: [{ id: `olympiad-${c.sourceId}-set`, label: '25-Question Challenge Paper' }],
+  description: c.description,
+  subtopics: c.subtopics,
 }))
 
 export const CHAPTERS = [
@@ -252,6 +308,8 @@ export const CHAPTER_ICONS = {
   BarChart3,
   Blocks,
   Trophy,
+  Brain,
+  Award,
 }
 
 export const getChapterById = (id) => CHAPTERS.find((c) => c.id === id)
