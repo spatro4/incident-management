@@ -111,6 +111,7 @@ export const OLYMPIAD_CHAPTERS = [
       { id: 'numbers-to-100000', label: 'Number System and Number Sense' },
       { id: 'prime-composite', label: 'Number System and Number Sense' },
       { id: 'rounding-estimation', label: 'Number System and Number Sense' },
+      { id: 'whole-numbers-word-problems', label: 'Number System and Number Sense' },
     ],
   },
   {
@@ -123,6 +124,7 @@ export const OLYMPIAD_CHAPTERS = [
       { id: 'factors-common-factors', label: 'Factors and Multiples' },
       { id: 'multiples-common-multiples', label: 'Factors and Multiples' },
       { id: 'number-theory-puzzles', label: 'Factors and Multiples' },
+      { id: 'factors-multiples-word-problems', label: 'Factors and Multiples' },
     ],
   },
   {
@@ -135,6 +137,7 @@ export const OLYMPIAD_CHAPTERS = [
       { id: 'computation-operations', label: 'Computation Operations' },
       { id: 'multiply-2digit', label: 'Computation Operations' },
       { id: 'divide-1digit', label: 'Computation Operations' },
+      { id: 'word-problems-multdiv', label: 'Computation Operations' },
     ],
   },
   {
@@ -149,6 +152,8 @@ export const OLYMPIAD_CHAPTERS = [
       { id: 'add-sub-unlike', label: 'Fractions and Decimals' },
       { id: 'tenths-hundredths-thousandths', label: 'Fractions and Decimals' },
       { id: 'comparing-ordering-decimals', label: 'Fractions and Decimals' },
+      { id: 'word-problems-fractions', label: 'Fractions and Decimals' },
+      { id: 'word-problems-decimals', label: 'Fractions and Decimals' },
     ],
   },
   {
@@ -187,6 +192,7 @@ export const OLYMPIAD_CHAPTERS = [
       { id: 'squares-rectangles', label: 'Geometry' },
       { id: 'symmetry', label: 'Geometry' },
       { id: 'geometry-spatial', label: 'Geometry' },
+      { id: 'geometry-word-problems', label: 'Geometry' },
     ],
   },
   {
@@ -199,6 +205,7 @@ export const OLYMPIAD_CHAPTERS = [
       { id: 'perimeter-squares-rectangles', label: 'Perimeter and Area' },
       { id: 'area-squares-rectangles', label: 'Perimeter and Area' },
       { id: 'area-composite', label: 'Perimeter and Area' },
+      { id: 'perimeter-area-word-problems', label: 'Perimeter and Area' },
     ],
   },
   {
@@ -211,6 +218,7 @@ export const OLYMPIAD_CHAPTERS = [
       { id: 'tables-bar-graphs', label: 'Data Handling' },
       { id: 'line-graphs', label: 'Data Handling' },
       { id: 'combinatorics-counting', label: 'Data Handling' },
+      { id: 'data-handling-word-problems', label: 'Data Handling' },
     ],
   },
   {
@@ -248,10 +256,11 @@ export const CHAPTERS = [
     icon: 'Hash',
     color: 'candy.blue',
     gradient: 'from-sky-400 to-blue-500',
-    description: 'Numbers to 100,000, rounding, and estimation.',
+    description: 'Numbers to 100,000, rounding, estimation, and word problems.',
     subtopics: [
       { id: 'numbers-to-100000', label: 'Numbers to 100,000' },
       { id: 'rounding-estimation', label: 'Rounding and Estimation' },
+      { id: 'whole-numbers-word-problems', label: 'Word Problems' },
     ],
   },
   {
@@ -263,11 +272,12 @@ export const CHAPTERS = [
     icon: 'Grid3x3',
     color: 'candy.teal',
     gradient: 'from-teal-400 to-cyan-500',
-    description: 'Factors and common factors, multiples and common multiples, prime and composite numbers.',
+    description: 'Factors and common factors, multiples and common multiples, prime and composite numbers, and word problems.',
     subtopics: [
       { id: 'factors-common-factors', label: 'Factors and Common Factors' },
       { id: 'multiples-common-multiples', label: 'Multiples and Common Multiples' },
       { id: 'prime-composite', label: 'Prime and Composite Numbers' },
+      { id: 'factors-multiples-word-problems', label: 'Word Problems' },
     ],
   },
   {
@@ -349,12 +359,13 @@ export const CHAPTERS = [
     icon: 'Shapes',
     color: 'candy.orange',
     gradient: 'from-orange-400 to-amber-500',
-    description: 'Angles and protractor use, perpendicular and parallel lines, squares and rectangles, symmetry.',
+    description: 'Angles and protractor use, perpendicular and parallel lines, squares and rectangles, symmetry, and word problems.',
     subtopics: [
       { id: 'angles-protractor', label: 'Angles and Protractor Use' },
       { id: 'perpendicular-parallel', label: 'Perpendicular and Parallel Lines' },
       { id: 'squares-rectangles', label: 'Squares and Rectangles' },
       { id: 'symmetry', label: 'Symmetry' },
+      { id: 'geometry-word-problems', label: 'Word Problems' },
     ],
   },
   {
@@ -366,11 +377,12 @@ export const CHAPTERS = [
     icon: 'Ruler',
     color: 'candy.blue',
     gradient: 'from-blue-400 to-indigo-500',
-    description: 'Perimeter of squares and rectangles, area of squares and rectangles, area of composite figures.',
+    description: 'Perimeter of squares and rectangles, area of squares and rectangles, area of composite figures, and word problems.',
     subtopics: [
       { id: 'perimeter-squares-rectangles', label: 'Perimeter of Squares and Rectangles' },
       { id: 'area-squares-rectangles', label: 'Area of Squares and Rectangles' },
       { id: 'area-composite', label: 'Area of Composite Figures' },
+      { id: 'perimeter-area-word-problems', label: 'Word Problems' },
     ],
   },
   {
@@ -382,10 +394,11 @@ export const CHAPTERS = [
     icon: 'BarChart3',
     color: 'candy.pink',
     gradient: 'from-pink-400 to-rose-500',
-    description: 'Reading tables and bar graphs, and line graphs.',
+    description: 'Reading tables and bar graphs, line graphs, and word problems.',
     subtopics: [
       { id: 'tables-bar-graphs', label: 'Tables and Bar Graphs' },
       { id: 'line-graphs', label: 'Line Graphs' },
+      { id: 'data-handling-word-problems', label: 'Word Problems' },
     ],
   },
 

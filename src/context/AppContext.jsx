@@ -18,6 +18,7 @@ export function AppProvider({ children }) {
   const [sessionUsername, setSessionUsername] = useState(() => getSessionUsername())
   const [activeUsername, setActiveUsername] = useState(() => getSessionUsername())
   const [role, setRole] = useState('student') // 'student' | 'teacher'
+  const [homeTrigger, setHomeTrigger] = useState(0)
   const [users, setUsers] = useState(() => listUsers())
   const [authError, setAuthError] = useState('')
   const [state, setState] = useState(() =>
@@ -69,6 +70,13 @@ export function AppProvider({ children }) {
     clearSession()
     setSessionUsername(null)
     setActiveUsername(null)
+  }, [])
+
+  // Header "Home" button: jump back to the student portal's home screen
+  // from anywhere (mid-quiz, chapter select, or the teacher dashboard).
+  const goHome = useCallback(() => {
+    setRole('student')
+    setHomeTrigger((t) => t + 1)
   }, [])
 
   // Teacher-only: browse any registered student's data without touching
@@ -128,6 +136,8 @@ export function AppProvider({ children }) {
       state,
       role,
       setRole,
+      homeTrigger,
+      goHome,
       levelInfo,
       isAssignedToday,
       submitQuestResult,
@@ -149,6 +159,8 @@ export function AppProvider({ children }) {
     [
       state,
       role,
+      homeTrigger,
+      goHome,
       levelInfo,
       isAssignedToday,
       submitQuestResult,

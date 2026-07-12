@@ -121,6 +121,33 @@ function genRoundingEstimation(difficulty = 'medium') {
   }
 }
 
+// CBSE-style multi-step word problem: form the greatest/smallest number from
+// a set of digits, then find the difference between them.
+function genPlaceValueWordProblem(difficulty = 'medium') {
+  const numDigits = difficulty === 'hard' ? 5 : difficulty === 'easy' ? 3 : 4
+  const digits = []
+  while (digits.length < numDigits) {
+    const d = randInt(0, 9)
+    if (!digits.includes(d)) digits.push(d)
+  }
+  const sortedDesc = [...digits].sort((a, b) => b - a)
+  const greatest = Number(sortedDesc.join(''))
+  const sortedAsc = [...digits].sort((a, b) => a - b)
+  if (sortedAsc[0] === 0) {
+    const firstNonZeroIdx = sortedAsc.findIndex((d) => d !== 0)
+    ;[sortedAsc[0], sortedAsc[firstNonZeroIdx]] = [sortedAsc[firstNonZeroIdx], sortedAsc[0]]
+  }
+  const smallest = Number(sortedAsc.join(''))
+  const difference = greatest - smallest
+  return {
+    subtopicId: 'whole-numbers-word-problems',
+    type: 'input',
+    prompt: `Using the digits ${digits.join(', ')} exactly once each, form the greatest possible ${numDigits}-digit number and the smallest possible ${numDigits}-digit number (the smallest cannot start with 0). What is the difference between them?`,
+    answer: String(difference),
+    hint: `Greatest number: arrange the digits from largest to smallest (${sortedDesc.join('')}). Smallest number: arrange from smallest to largest, but don't start with 0 (${sortedAsc.join('')}). Then subtract.`,
+  }
+}
+
 // ---------------------------------------------------------------------------
 // MULTIPLES AND FACTORS
 // ---------------------------------------------------------------------------
@@ -254,6 +281,35 @@ function genPrimeComposite(difficulty = 'medium') {
   }
 }
 
+// CBSE-style word problems: the classic "bells toll together" (LCM) and
+// "cut into equal pieces" (GCF) scenarios.
+function genFactorsMultiplesWordProblem() {
+  const mode = pick(['lcm-bells', 'gcf-ribbon'])
+  if (mode === 'lcm-bells') {
+    const pairs = [[4, 6], [3, 5], [6, 8], [4, 10], [5, 6], [3, 4], [6, 9], [8, 12], [4, 9], [3, 8], [5, 8], [6, 10]]
+    const [a, b] = pick(pairs)
+    const lcm = (a * b) / gcd(a, b)
+    return {
+      subtopicId: 'factors-multiples-word-problems',
+      type: 'input',
+      prompt: `Two bells toll every ${a} minutes and ${b} minutes respectively. If both bells toll together at 9:00 am, after how many minutes will they toll together again?`,
+      answer: String(lcm),
+      hint: `They'll toll together again after a number of minutes that's a multiple of both ${a} and ${b} — that's the LCM of ${a} and ${b}.`,
+    }
+  }
+  const pairs2 = [[12, 18], [16, 24], [20, 30], [18, 27], [24, 36], [15, 25], [14, 21], [28, 42], [10, 15], [21, 28]]
+  const [x, y] = pick(pairs2)
+  const gcf = gcd(x, y)
+  const pieces = (x + y) / gcf
+  return {
+    subtopicId: 'factors-multiples-word-problems',
+    type: 'input',
+    prompt: `A tailor has two ribbons, one ${x} m long and the other ${y} m long. She wants to cut both into equal-length pieces with none left over, using the greatest possible length for each piece. How many pieces will she get in total from both ribbons?`,
+    answer: String(pieces),
+    hint: `The greatest possible piece length is the GCF of ${x} and ${y}, which is ${gcf} m. Total pieces = (${x} + ${y}) ÷ ${gcf}.`,
+  }
+}
+
 // ---------------------------------------------------------------------------
 // MULTIPLICATION AND DIVISION
 // ---------------------------------------------------------------------------
@@ -345,6 +401,25 @@ function genMultDivWordProblems(difficulty = 'medium') {
     prompt: `${name} has ${total} ${item} and wants to share them equally among ${people} friends. How many ${item} will each friend get?`,
     answer: String(each),
     hint: `Divide the total number of ${item} by the number of friends (${total} ÷ ${people}).`,
+  }
+}
+
+// CBSE-style 3-step word problem: multiply, subtract, then divide.
+function genComputationWordProblem() {
+  const name = pick(WP_NAMES)
+  const rows = randInt(6, 12)
+  const perRow = randInt(8, 20)
+  const total = rows * perRow
+  const broken = randInt(3, Math.max(4, Math.min(15, total - 10)))
+  const usable = total - broken
+  const groupSize = pick([4, 5, 6, 7, 8])
+  const groups = Math.floor(usable / groupSize)
+  return {
+    subtopicId: 'word-problems-multdiv',
+    type: 'input',
+    prompt: `For the school fair, ${name} arranged ${rows} rows of chairs with ${perRow} chairs in each row. ${broken} chairs were found broken and removed. The remaining chairs were then grouped into sets of ${groupSize} for storage. How many full sets were made?`,
+    answer: String(groups),
+    hint: `First find the total chairs (${rows} × ${perRow} = ${total}), subtract the broken ones (${total} − ${broken} = ${usable}), then divide by ${groupSize}.`,
   }
 }
 
@@ -560,6 +635,29 @@ function genFractionWordProblems(difficulty = 'medium') {
     prompt: `${name} has ${total} ${item}. ${num}/${den} of them are ${pick(['blue', 'red', 'yellow', 'green'])}. How many ${item} is that?`,
     answer: String(part),
     hint: `Divide ${total} by ${den} to find one part, then multiply by ${num}.`,
+  }
+}
+
+// CBSE-style 2-step fraction word problem: take a fraction of a total, then
+// a fraction of what's left.
+function genFractionWordProblemAdvanced() {
+  const name = pick(WP_NAMES)
+  const den1 = pick([3, 4, 5, 6, 8])
+  const num1 = randInt(1, den1 - 1)
+  const den2 = pick([2, 3, 4])
+  const num2 = randInt(1, den2 - 1)
+  const k = randInt(2, 4)
+  const total = den1 * den2 * k
+  const usedFirst = den2 * k * num1
+  const remainingAfterFirst = total - usedFirst
+  const usedSecond = k * (den1 - num1) * num2
+  const final = remainingAfterFirst - usedSecond
+  return {
+    subtopicId: 'word-problems-fractions',
+    type: 'input',
+    prompt: `${name} had ${total} liters of water in a tank. On Monday, ${name} used ${num1}/${den1} of the water for cleaning. On Tuesday, ${name} used ${num2}/${den2} of the remaining water for washing. How many liters of water are left in the tank?`,
+    answer: String(final),
+    hint: `First find how much was used Monday (${num1}/${den1} of ${total} = ${usedFirst} L), leaving ${remainingAfterFirst} L. Then find Tuesday's use (${num2}/${den2} of ${remainingAfterFirst} = ${usedSecond} L) and subtract.`,
   }
 }
 
@@ -821,6 +919,24 @@ function genDecimalWordProblems(difficulty = 'medium') {
   }
 }
 
+// CBSE-style 3-item shopping bill: add three decimal prices, then find change.
+function genDecimalWordProblemAdvanced() {
+  const name = pick(WP_NAMES)
+  const items = shuffle(['a notebook', 'a pencil box', 'a water bottle', 'a lunch bag', 'a storybook', 'an umbrella']).slice(0, 3)
+  const prices = items.map(() => randInt(150, 999) / 100)
+  const total = +prices.reduce((s, p) => s + p, 0).toFixed(2)
+  let paid = Math.ceil(total / 10) * 10
+  if (paid <= total) paid += 10
+  const change = +(paid - total).toFixed(2)
+  return {
+    subtopicId: 'word-problems-decimals',
+    type: 'input',
+    prompt: `${name} bought ${items[0]} for $${prices[0].toFixed(2)}, ${items[1]} for $${prices[1].toFixed(2)}, and ${items[2]} for $${prices[2].toFixed(2)}. ${name} paid with a $${paid.toFixed(2)} note. How much change did ${name} receive? (in dollars, e.g. 1.50)`,
+    answer: change.toFixed(2),
+    hint: `First add all three prices together ($${prices[0].toFixed(2)} + $${prices[1].toFixed(2)} + $${prices[2].toFixed(2)} = $${total.toFixed(2)}), then subtract from $${paid.toFixed(2)}.`,
+  }
+}
+
 // ---------------------------------------------------------------------------
 // GEOMETRY
 // ---------------------------------------------------------------------------
@@ -974,6 +1090,46 @@ function genSymmetry(difficulty = 'medium') {
   }
 }
 
+// CBSE-style angle reasoning: linear pairs, missing triangle angle, and
+// angles given as a ratio.
+function genGeometryWordProblem() {
+  const mode = pick(['linear-pair', 'triangle-two-given', 'triangle-ratio'])
+  if (mode === 'linear-pair') {
+    const angle = randInt(20, 160)
+    const other = 180 - angle
+    return {
+      subtopicId: 'geometry-word-problems',
+      type: 'input',
+      prompt: `Two angles lie next to each other on a straight line, forming a linear pair. If one of the angles measures ${angle}°, what is the measure of the other angle?`,
+      answer: String(other),
+      hint: `Angles on a straight line always add up to 180°, so subtract: 180° − ${angle}°.`,
+    }
+  }
+  if (mode === 'triangle-two-given') {
+    const a = randInt(30, 90)
+    const b = randInt(30, 140 - a)
+    const c = 180 - a - b
+    return {
+      subtopicId: 'geometry-word-problems',
+      type: 'input',
+      prompt: `In a triangle, two of the angles measure ${a}° and ${b}°. What is the measure of the third angle?`,
+      answer: String(c),
+      hint: `The angles of a triangle always add up to 180°. Third angle = 180° − ${a}° − ${b}°.`,
+    }
+  }
+  const ratio = pick([[2, 3, 4], [1, 2, 3], [3, 4, 5], [2, 2, 5], [3, 5, 7], [2, 3, 7]])
+  const sumParts = ratio.reduce((s, r) => s + r, 0)
+  const unit = 180 / sumParts
+  const largest = Math.max(...ratio) * unit
+  return {
+    subtopicId: 'geometry-word-problems',
+    type: 'input',
+    prompt: `The three angles of a triangle are in the ratio ${ratio.join(' : ')}. What is the measure of the largest angle (in degrees)?`,
+    answer: String(largest),
+    hint: `Add the ratio parts (${ratio.join(' + ')} = ${sumParts}), then divide 180° by ${sumParts} to find one part (${unit}°). Multiply that by the largest ratio number.`,
+  }
+}
+
 // ---------------------------------------------------------------------------
 // PERIMETER AND AREA
 // ---------------------------------------------------------------------------
@@ -1040,6 +1196,35 @@ function genAreaComposite(difficulty = 'medium') {
     choices: choices.map((c) => `${c} cm²`),
     answer: `${answer} cm²`,
     hint: `Find the area of the whole rectangle (${L} × ${W}), then subtract the notch (${notchL} × ${notchW}).`,
+  }
+}
+
+// CBSE-style real-world cost problems: fencing (perimeter × rate) and
+// tiling/flooring (area × rate).
+function genPerimeterAreaWordProblem() {
+  const mode = pick(['fencing', 'tiling'])
+  const l = randInt(8, 25)
+  const w = randInt(5, 18)
+  const rate = pick([3, 4, 5, 6, 8, 10])
+  if (mode === 'fencing') {
+    const perimeter = 2 * (l + w)
+    const cost = perimeter * rate
+    return {
+      subtopicId: 'perimeter-area-word-problems',
+      type: 'input',
+      prompt: `A rectangular garden is ${l} m long and ${w} m wide. It needs to be fenced all the way around at a cost of $${rate} per meter. What is the total cost of fencing?`,
+      answer: String(cost),
+      hint: `First find the perimeter (2 × (${l} + ${w}) = ${perimeter} m), then multiply by the cost per meter ($${rate}).`,
+    }
+  }
+  const area = l * w
+  const cost = area * rate
+  return {
+    subtopicId: 'perimeter-area-word-problems',
+    type: 'input',
+    prompt: `A rectangular room is ${l} m long and ${w} m wide. Tiling costs $${rate} per square meter. What is the total cost to tile the whole room?`,
+    answer: String(cost),
+    hint: `First find the area (${l} × ${w} = ${area} m²), then multiply by the cost per square meter ($${rate}).`,
   }
 }
 
@@ -1151,6 +1336,24 @@ function genLineGraphQuestion(difficulty = 'medium') {
     answer,
     hint: `Trace the line from left to right and watch whether it goes up or down.`,
     chartData: { type: 'line', data },
+  }
+}
+
+// CBSE-style data-table reasoning: read several values, then compute a total
+// and apply a rate to it.
+function genDataHandlingWordProblem() {
+  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+  const sold = days.map(() => randInt(4, 20))
+  const price = pick([2, 3, 4, 5])
+  const total = sold.reduce((s, v) => s + v, 0)
+  const revenue = total * price
+  const tableStr = days.map((d, i) => `${d}: ${sold[i]}`).join(', ')
+  return {
+    subtopicId: 'data-handling-word-problems',
+    type: 'input',
+    prompt: `A bakery recorded how many cakes it sold each day: ${tableStr}. Each cake sells for $${price}. What was the bakery's total revenue (in dollars) from cake sales that week?`,
+    answer: String(revenue),
+    hint: `First add up all the cakes sold (${sold.join(' + ')} = ${total}), then multiply by the price per cake ($${price}).`,
   }
 }
 
@@ -1391,6 +1594,22 @@ function genPatternsSequences(difficulty = 'medium') {
     choices,
     answer,
     hint: `Find the difference between each pair of consecutive numbers — that's the rule to apply again.`,
+  }
+}
+
+// CBSE/Olympiad-style pattern applied to a real scenario (arithmetic sequence
+// dressed up as rows of stadium seating).
+function genPatternsSequencesWordProblem() {
+  const a = randInt(3, 10)
+  const d = randInt(2, 6)
+  const n = randInt(4, 9)
+  const seatsInRowN = a + (n - 1) * d
+  return {
+    subtopicId: 'patterns-sequences',
+    type: 'input',
+    prompt: `In a stadium, Row 1 has ${a} seats. Each row after that has ${d} more seats than the row before it. How many seats are in Row ${n}?`,
+    answer: String(seatsInRowN),
+    hint: `This is an arithmetic pattern. Seats in Row ${n} = ${a} + (${n} − 1) × ${d}.`,
   }
 }
 
@@ -1703,6 +1922,39 @@ function genAnalogyClassification() {
   }
 }
 
+const WORD_ANALOGIES = [
+  ['Pen', 'Write', 'Knife', 'Cut'],
+  ['Bird', 'Fly', 'Fish', 'Swim'],
+  ['Eye', 'See', 'Ear', 'Hear'],
+  ['Cow', 'Calf', 'Dog', 'Puppy'],
+  ['Doctor', 'Hospital', 'Teacher', 'School'],
+  ['Foot', 'Shoe', 'Hand', 'Glove'],
+  ['Bee', 'Hive', 'Bird', 'Nest'],
+  ['Sun', 'Day', 'Moon', 'Night'],
+  ['Puppy', 'Dog', 'Kitten', 'Cat'],
+  ['Water', 'Liquid', 'Ice', 'Solid'],
+  ['Author', 'Book', 'Singer', 'Song'],
+  ['Tailor', 'Clothes', 'Carpenter', 'Furniture'],
+  ['Fish', 'Water', 'Bird', 'Air'],
+  ['Petrol', 'Vehicle', 'Food', 'Body'],
+]
+
+// Real-world verbal analogy — a classic CBSE/Olympiad reasoning question type
+// distinct from the numeric a:b::c:? puzzles above.
+function genAnalogyClassificationWordProblem() {
+  const [w1, w2, w3, w4] = pick(WORD_ANALOGIES)
+  const distractorPool = WORD_ANALOGIES.flat().filter((w) => w !== w4)
+  const { choices, answer } = mcqFrom(w4, () => pick(distractorPool), (v) => v)
+  return {
+    subtopicId: 'analogy-classification',
+    type: 'mcq',
+    prompt: `${w1} is to ${w2} as ${w3} is to ?`,
+    choices,
+    answer,
+    hint: `Work out how ${w1} relates to ${w2} (think about what a ${w1} is used for or related to), then find the word with the same relationship to ${w3}.`,
+  }
+}
+
 function genCodingDecoding() {
   const shift = pick([1, 2, 3, -1, -2, -3])
   const words = ['CAT', 'DOG', 'SUN', 'BAT', 'PEN', 'CUP', 'HAT', 'BOX', 'RUN', 'MAP']
@@ -1724,6 +1976,47 @@ function genCodingDecoding() {
     choices,
     answer,
     hint: `Find how much each letter shifts (compare ${codeWord} to ${codedExample}), then apply the same shift to each letter of ${targetWord}.`,
+  }
+}
+
+const CODE_DEDUCTION_NONSENSE = ['pic', 'ne', 'ma', 'da', 'ta', 'ki', 'lo', 'zu', 've', 'ra', 'mi', 'bo', 'fa', 'tu', 'xe']
+const CODE_DEDUCTION_WORDS = ['ram', 'sita', 'good', 'bad', 'boy', 'girl', 'run', 'fast', 'big', 'small', 'red', 'blue', 'cat', 'dog', 'sun', 'rain']
+
+// Two more coding-decoding puzzle types, distinct from the letter-shift
+// cipher above: a mirror-alphabet substitution, and the classic CBSE
+// "find the code word" deduction puzzle (find the common code between two
+// overlapping coded phrases).
+function genCodingDecodingWordProblem() {
+  const mode = pick(['mirror-alphabet', 'sentence-deduction'])
+  if (mode === 'mirror-alphabet') {
+    const mirror = (ch) => String.fromCharCode(90 - (ch.charCodeAt(0) - 65))
+    const words = ['CAT', 'DOG', 'SUN', 'BAT', 'PEN', 'CUP', 'HAT', 'BOX', 'RUN', 'MAP', 'BIRD', 'FISH', 'BOOK', 'DESK', 'LAMP']
+    const codeWord = pick(words)
+    let targetWord = pick(words)
+    while (targetWord === codeWord) targetWord = pick(words)
+    const encode = (word) => word.split('').map(mirror).join('')
+    const codedExample = encode(codeWord)
+    const correctAnswer = encode(targetWord)
+    const { choices, answer } = mcqFrom(correctAnswer, () => encode(pick(words.filter((w) => w !== targetWord))), (v) => v)
+    return {
+      subtopicId: 'coding-decoding',
+      type: 'mcq',
+      prompt: `In a certain code, each letter is replaced by the letter that is the same number of steps from the end of the alphabet as it is from the start (A↔Z, B↔Y, C↔X, and so on). If ${codeWord} is written as ${codedExample}, how is ${targetWord} written in the same code?`,
+      choices,
+      answer,
+      hint: `Pair up the alphabet from both ends: A↔Z, B↔Y, C↔X, D↔W, and so on. Replace each letter of ${targetWord} using this pairing.`,
+    }
+  }
+  const [w1, w2, w3] = shuffle(CODE_DEDUCTION_WORDS).slice(0, 3)
+  const [c1, c2, c3] = shuffle(CODE_DEDUCTION_NONSENSE).slice(0, 3)
+  const pairA = shuffle([c1, c2])
+  const pairB = shuffle([c2, c3])
+  return {
+    subtopicId: 'coding-decoding',
+    type: 'input',
+    prompt: `In a certain code language, '${w1} ${w2}' is written as '${pairA[0]} ${pairA[1]}', and '${w2} ${w3}' is written as '${pairB[0]} ${pairB[1]}'. What is the code for '${w3}'?`,
+    answer: c3,
+    hint: `'${w2}' appears in both statements, so its code is the one common to both coded pairs (${pairA.join(' & ')} and ${pairB.join(' & ')}). The remaining code word in the second statement must stand for '${w3}'.`,
   }
 }
 
@@ -1824,8 +2117,27 @@ function genMirrorEmbedded() {
   }
 }
 
+const DICTIONARY_ORDER_WORDS = ['GARDEN', 'PLANET', 'MARKET', 'STRANGE', 'JUNGLE', 'JACKET', 'JASMINE', 'TIGERS', 'CLOUDY', 'NUMBER', 'SILVER', 'WONDER']
+
 function genAlphabetRanking() {
-  const mode = pick(['alphabet', 'ranking'])
+  const mode = pick(['alphabet', 'ranking', 'dictionary'])
+  if (mode === 'dictionary') {
+    const word = pick(DICTIONARY_ORDER_WORDS)
+    const chars = word.split('')
+    const sorted = [...chars].sort()
+    const askFirst = Math.random() < 0.5
+    const correct = askFirst ? sorted[0] : sorted[sorted.length - 1]
+    const otherLetters = chars.filter((c) => c !== correct)
+    const { choices, answer } = mcqFrom(correct, () => pick(otherLetters), (v) => v)
+    return {
+      subtopicId: 'alphabet-ranking',
+      type: 'mcq',
+      prompt: `If the letters of the word ${word} are rearranged in alphabetical order, which letter comes ${askFirst ? 'first' : 'last'}?`,
+      choices,
+      answer,
+      hint: `Write out all the letters of ${word} and sort them from A to Z. The ${askFirst ? 'first' : 'last'} letter in that order is the answer.`,
+    }
+  }
   if (mode === 'alphabet') {
     const steps = randInt(2, 5)
     const direction = pick(['after', 'before'])
@@ -1904,6 +2216,24 @@ function genDirectionSense() {
   }
 }
 
+// Multi-leg journey (4 legs instead of 2) that still nets out to a clean
+// Pythagorean-triple straight-line distance.
+function genDirectionSenseWordProblem() {
+  const [p, q, r] = pick(RIGHT_TRIANGLES)
+  const name = pick(WP_NAMES)
+  const n2 = randInt(1, Math.max(1, p - 1))
+  const n1 = n2 + p
+  const e2 = randInt(1, Math.max(1, q - 1))
+  const e1 = e2 + q
+  return {
+    subtopicId: 'direction-sense',
+    type: 'input',
+    prompt: `${name} walks ${n1} km North, then ${e1} km East, then ${n2} km South, and finally ${e2} km West. How far is ${name} now from the starting point, in a straight line (in km)?`,
+    answer: String(r),
+    hint: `Find the net distance North (${n1} − ${n2} = ${p} km) and net distance East (${e1} − ${e2} = ${q} km). These form a right angle, so use the Pythagorean triple ${p}-${q}-${r}: the straight-line distance is ${r} km.`,
+  }
+}
+
 const MEASUREMENT_UNITS = [
   { big: 'm', small: 'cm', factor: 100 },
   { big: 'kg', small: 'g', factor: 1000 },
@@ -1936,6 +2266,36 @@ function genMeasurement() {
     choices: choices.map((v) => `${v} ${unit.big}`),
     answer: `${answer} ${unit.big}`,
     hint: `${unit.factor} ${unit.small} = 1 ${unit.big}, so divide by ${unit.factor}.`,
+  }
+}
+
+// CBSE-style measurement word problems: unit conversion combined with a
+// real-world division scenario.
+function genMeasurementWordProblem() {
+  const mode = pick(['bottles', 'rope'])
+  if (mode === 'bottles') {
+    const bottleML = pick([200, 250, 500])
+    const containerL = randInt(2, 8)
+    const containerML = containerL * 1000
+    const bottles = containerML / bottleML
+    return {
+      subtopicId: 'measurement',
+      type: 'input',
+      prompt: `A container holds ${containerL} liters of juice. If each bottle holds ${bottleML} ml, how many bottles can be completely filled from the container?`,
+      answer: String(bottles),
+      hint: `Convert the container's volume to milliliters (${containerL} L = ${containerML} ml), then divide by the size of each bottle (${bottleML} ml).`,
+    }
+  }
+  const pieceCm = pick([25, 50, 20, 10])
+  const ropeM = randInt(3, 9)
+  const ropeCm = ropeM * 100
+  const pieces = ropeCm / pieceCm
+  return {
+    subtopicId: 'measurement',
+    type: 'input',
+    prompt: `A rope is ${ropeM} m long. It is cut into equal pieces, each ${pieceCm} cm long. How many pieces are cut from the rope?`,
+    answer: String(pieces),
+    hint: `Convert the rope's length to centimeters (${ropeM} m = ${ropeCm} cm), then divide by the length of each piece (${pieceCm} cm).`,
   }
 }
 
@@ -1981,6 +2341,34 @@ function genTimeCalendar() {
   }
 }
 
+// CBSE-style multi-leg elapsed-time word problem (journey + a stop + a
+// second leg), instead of a single addition step.
+function genTimeWordProblem() {
+  const name = pick(WP_NAMES)
+  const startHour = randInt(1, 12)
+  const startMin = pick([0, 10, 20, 30, 40, 50])
+  const leg1H = randInt(1, 2)
+  const leg1M = pick([0, 15, 30, 45])
+  const stopMin = randInt(5, 25)
+  const leg2H = randInt(0, 2)
+  const leg2M = pick([15, 30, 45])
+  const totalMin = startHour * 60 + startMin + leg1H * 60 + leg1M + stopMin + leg2H * 60 + leg2M
+  const fmt = (mins) => {
+    const h = Math.floor((((mins % 720) + 720) % 720) / 60) || 12
+    const m = ((mins % 60) + 60) % 60
+    return `${h}:${String(m).padStart(2, '0')}`
+  }
+  return {
+    subtopicId: 'time-calendar',
+    type: 'input',
+    prompt: `${name} boards a train at ${fmt(startHour * 60 + startMin)}. The train travels for ${leg1H} hour${leg1H > 1 ? 's' : ''}${
+      leg1M > 0 ? ` ${leg1M} minutes` : ''
+    } to reach a junction, waits there for ${stopMin} minutes, then travels another ${leg2H > 0 ? `${leg2H} hour${leg2H > 1 ? 's' : ''} ` : ''}${leg2M} minutes to reach the final station. What time does ${name} arrive at the final station? (Answer as H:MM, e.g. 6:30)`,
+    answer: fmt(totalMin),
+    hint: `Add up each time segment one by one: the first leg, the waiting time, then the second leg, regrouping 60 minutes into an hour whenever needed.`,
+  }
+}
+
 function genMoney() {
   const mode = pick(['change', 'total-coins'])
   const name = pick(WP_NAMES)
@@ -2012,6 +2400,22 @@ function genMoney() {
     prompt: `${name} has ${count} coins worth ${coin.name} each. How much money does ${name} have in total? (in dollars, e.g. 1.25)`,
     answer: total.toFixed(2),
     hint: `Multiply the number of coins (${count}) by the value of each coin (${coin.name}).`,
+  }
+}
+
+// CBSE-style classic profit/loss money word problem.
+function genMoneyWordProblem() {
+  const item = pick(['bicycle', 'watch', 'table', 'chair', 'toy car', 'showpiece'])
+  const costPrice = randInt(200, 900)
+  const isProfit = Math.random() < 0.5
+  const changeAmt = randInt(20, 150)
+  const sellingPrice = isProfit ? costPrice + changeAmt : costPrice - changeAmt
+  return {
+    subtopicId: 'money',
+    type: 'input',
+    prompt: `A shopkeeper bought a ${item} for $${costPrice} and sold it for $${sellingPrice}. Did the shopkeeper make a profit or a loss, and how much? (Answer as "Profit X" or "Loss X", e.g. Profit 20)`,
+    answer: `${isProfit ? 'Profit' : 'Loss'} ${changeAmt}`,
+    hint: `Compare the selling price to the cost price. If selling price is higher, it's a profit; if lower, it's a loss. The amount is the difference between the two prices.`,
   }
 }
 
@@ -2055,15 +2459,15 @@ function genComputationOperations() {
 // REGISTRY
 // ---------------------------------------------------------------------------
 const GENERATORS = {
-  'whole-numbers': [genNumbersTo100000, genRoundingEstimation],
-  'factors-multiples': [genFactorsCommonFactors, genMultiplesCommonMultiples, genPrimeComposite],
-  'multiplication-division': [genMultiply2Digit, genDivide1Digit, genMultDivWordProblems],
-  fractions: [genMixedNumbers, genCompareFractions, genAddSubUnlikeFractions, genFractionOfSet, genFractionWordProblems],
+  'whole-numbers': [genNumbersTo100000, genRoundingEstimation, genPlaceValueWordProblem],
+  'factors-multiples': [genFactorsCommonFactors, genMultiplesCommonMultiples, genPrimeComposite, genFactorsMultiplesWordProblem],
+  'multiplication-division': [genMultiply2Digit, genDivide1Digit, genMultDivWordProblems, genComputationWordProblem],
+  fractions: [genMixedNumbers, genCompareFractions, genAddSubUnlikeFractions, genFractionOfSet, genFractionWordProblems, genFractionWordProblemAdvanced],
   decimals: [genDecimalPlaceValue, genCompareDecimals, genRoundingDecimals],
-  'decimal-operations': [genAddSubDecimals, genMultiplyDivideDecimals, genDecimalWordProblems],
-  geometry: [genAngles, genLines, genSquaresRectangles, genSymmetry],
-  'perimeter-area': [genPerimeterRect, genAreaRect, genAreaComposite],
-  'data-analysis': [genBarGraphQuestion, genLineGraphQuestion],
+  'decimal-operations': [genAddSubDecimals, genMultiplyDivideDecimals, genDecimalWordProblems, genDecimalWordProblemAdvanced],
+  geometry: [genAngles, genLines, genSquaresRectangles, genSymmetry, genGeometryWordProblem],
+  'perimeter-area': [genPerimeterRect, genAreaRect, genAreaComposite, genPerimeterAreaWordProblem],
+  'data-analysis': [genBarGraphQuestion, genLineGraphQuestion, genDataHandlingWordProblem],
   'word-problems': [genPartWhole, genComparison, genMultiStep],
 }
 
@@ -2077,22 +2481,30 @@ const GENERATORS = {
 // re-randomized every session, so teachers have a stable answer key. Every
 // generator below always runs at 'hard' difficulty.
 export const OLYMPIAD_CHAPTER_GENERATORS = {
-  'patterns-series': [genPatternsSequences],
-  'analogy-classification': [genAnalogyClassification],
-  'coding-decoding': [genCodingDecoding],
+  'patterns-series': [genPatternsSequences, genPatternsSequencesWordProblem],
+  'analogy-classification': [genAnalogyClassification, genAnalogyClassificationWordProblem],
+  'coding-decoding': [genCodingDecoding, genCodingDecodingWordProblem],
   'mirror-embedded-figures': [genMirrorEmbedded],
   'alphabet-ranking': [genAlphabetRanking],
-  'direction-sense': [genDirectionSense],
-  'number-system-sense': [genNumbersTo100000, genPrimeComposite, genRoundingEstimation],
-  'factors-multiples-olympiad': [genFactorsCommonFactors, genMultiplesCommonMultiples, genNumberTheoryPuzzles],
-  'computation-operations': [genComputationOperations, genMultiply2Digit, genDivide1Digit],
-  'fractions-decimals-olympiad': [genMixedNumbers, genCompareFractions, genAddSubUnlikeFractions, genDecimalPlaceValue, genCompareDecimals],
-  measurement: [genMeasurement],
-  'time-calendar': [genTimeCalendar],
-  money: [genMoney],
-  'geometry-olympiad': [genAngles, genLines, genSquaresRectangles, genSymmetry, genGeometrySpatial],
-  'perimeter-area-olympiad': [genPerimeterRect, genAreaRect, genAreaComposite],
-  'data-handling': [genBarGraphQuestion, genLineGraphQuestion, genCombinatoricsCounting],
+  'direction-sense': [genDirectionSense, genDirectionSenseWordProblem],
+  'number-system-sense': [genNumbersTo100000, genPrimeComposite, genRoundingEstimation, genPlaceValueWordProblem],
+  'factors-multiples-olympiad': [genFactorsCommonFactors, genMultiplesCommonMultiples, genNumberTheoryPuzzles, genFactorsMultiplesWordProblem],
+  'computation-operations': [genComputationOperations, genMultiply2Digit, genDivide1Digit, genComputationWordProblem],
+  'fractions-decimals-olympiad': [
+    genMixedNumbers,
+    genCompareFractions,
+    genAddSubUnlikeFractions,
+    genDecimalPlaceValue,
+    genCompareDecimals,
+    genFractionWordProblemAdvanced,
+    genDecimalWordProblemAdvanced,
+  ],
+  measurement: [genMeasurement, genMeasurementWordProblem],
+  'time-calendar': [genTimeCalendar, genTimeWordProblem],
+  money: [genMoney, genMoneyWordProblem],
+  'geometry-olympiad': [genAngles, genLines, genSquaresRectangles, genSymmetry, genGeometrySpatial, genGeometryWordProblem],
+  'perimeter-area-olympiad': [genPerimeterRect, genAreaRect, genAreaComposite, genPerimeterAreaWordProblem],
+  'data-handling': [genBarGraphQuestion, genLineGraphQuestion, genCombinatoricsCounting, genDataHandlingWordProblem],
   achievers: [genCompetitionProblems, genLogicPuzzles],
 }
 

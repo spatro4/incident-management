@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Flame, Star, Trophy, Rocket, Megaphone, ChevronRight, GraduationCap } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { CHAPTERS, CHAPTER_ICONS, BADGES, LEVELS } from '../../data/curriculum'
@@ -21,9 +21,18 @@ function StatCard({ icon: Icon, label, value, colorClass }) {
 }
 
 export default function StudentDashboard() {
-  const { state, levelInfo, isAssignedToday } = useApp()
+  const { state, levelInfo, isAssignedToday, homeTrigger } = useApp()
   const [view, setView] = useState('home') // 'home' | 'quest' | 'chapter'
   const [activeChapterId, setActiveChapterId] = useState(null)
+
+  // Clicking the header's Home button bumps homeTrigger — jump back to the
+  // dashboard home view even if we're mid-quiz or on the chapter picker.
+  useEffect(() => {
+    if (homeTrigger > 0) {
+      setView('home')
+      setActiveChapterId(null)
+    }
+  }, [homeTrigger])
 
   if (!state) return null
 
