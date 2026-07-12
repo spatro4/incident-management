@@ -123,10 +123,10 @@ function genEquivalentFractions() {
 
 function genAddSubFractions() {
   const den = pick([4, 5, 6, 8, 10, 12])
-  const n1 = randInt(1, den - 1)
+  let n1 = randInt(1, den - 1)
   let n2 = randInt(1, den - 1)
   const isAdd = Math.random() < 0.5
-  if (!isAdd && n2 > n1) [n1, n2] = [n2, n1] // ensure non-negative for subtraction wording swap not needed since same var scope
+  if (!isAdd && n2 > n1) [n1, n2] = [n2, n1]
   const resultNum = isAdd ? n1 + n2 : n1 - n2
   const [simpNum, simpDen] = simplify(Math.abs(resultNum), den)
   const answerStr = simpDen === 1 ? `${simpNum}` : `${simpNum}/${simpDen}`
