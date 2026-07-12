@@ -1,15 +1,17 @@
 import { useState } from 'react'
-import { LayoutDashboard, ClipboardList, History, RefreshCcw, Users } from 'lucide-react'
+import { LayoutDashboard, ClipboardList, History, RefreshCcw, Users, KeyRound } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import TeacherLogin from './TeacherLogin'
 import AnalyticsCharts from './AnalyticsCharts'
 import AssignmentManager from './AssignmentManager'
 import ActivityLog from './ActivityLog'
+import OlympiadAnswerKey from './OlympiadAnswerKey'
 
 const TABS = [
   { id: 'analytics', label: 'Analytics', icon: LayoutDashboard },
   { id: 'assignments', label: 'Assignments', icon: ClipboardList },
   { id: 'log', label: 'Activity Log', icon: History },
+  { id: 'olympiad-key', label: 'Olympiad Answer Key', icon: KeyRound },
 ]
 
 export default function TeacherDashboard() {
@@ -92,6 +94,7 @@ export default function TeacherDashboard() {
       {state && tab === 'analytics' && <AnalyticsCharts chapterStats={state.chapterStats} />}
       {state && tab === 'assignments' && <AssignmentManager />}
       {state && tab === 'log' && <ActivityLog activityLog={state.activityLog} />}
+      {tab === 'olympiad-key' && <OlympiadAnswerKey />}
     </div>
   )
 }

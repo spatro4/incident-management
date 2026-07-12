@@ -35,10 +35,14 @@ export default function ActivityLog({ activityLog }) {
                   <td className="py-2 pr-4">
                     <span
                       className={`text-xs font-bold px-2 py-1 rounded-full ${
-                        log.mode === 'exam' ? 'bg-amber-100 text-amber-600' : 'bg-indigo-100 text-indigo-600'
+                        log.mode === 'exam'
+                          ? 'bg-amber-100 text-amber-600'
+                          : log.mode === 'olympiad'
+                            ? 'bg-slate-800 text-white'
+                            : 'bg-indigo-100 text-indigo-600'
                       }`}
                     >
-                      {log.mode === 'exam' ? 'Assigned Exam' : 'Daily Quest'}
+                      {log.mode === 'exam' ? 'Assigned Exam' : log.mode === 'olympiad' ? 'Olympiad Paper' : 'Daily Quest'}
                     </span>
                   </td>
                   <td className="py-2 pr-4">

@@ -31,6 +31,24 @@ function mcqFrom(correctValue, distractorFn, formatFn = (v) => `${v}`) {
   return { choices, answer: formatFn(correctValue) }
 }
 
+// Like mcqFrom, but for "which of these satisfies property X" questions
+// where a naive distractor could accidentally ALSO satisfy X (e.g. another
+// common factor, another multiple of the same LCM). isAlsoValid rejects any
+// candidate that would make the question ambiguous.
+function mcqFromExcluding(correctValue, distractorFn, isAlsoValid, formatFn = (v) => `${v}`) {
+  const choicesSet = new Set([correctValue])
+  let guard = 0
+  while (choicesSet.size < 4 && guard < 60) {
+    const candidate = distractorFn()
+    guard += 1
+    if (choicesSet.has(candidate)) continue
+    if (isAlsoValid(candidate)) continue
+    choicesSet.add(candidate)
+  }
+  const choices = shuffle(Array.from(choicesSet)).map(formatFn)
+  return { choices, answer: formatFn(correctValue) }
+}
+
 const WP_NAMES = ['Mei Ling', 'Ahmad', 'Priya', 'Wei Jie', 'Aisha', 'Kumar', 'Siti', 'Ryan']
 const WP_ITEMS = ['stickers', 'marbles', 'story books', 'seashells', 'trading cards', 'stamps']
 
@@ -130,7 +148,11 @@ function genFactorsCommonFactors(difficulty = 'medium') {
     for (let i = 1; i <= y; i++) if (y % i === 0) factorsY.push(i)
     const common = factorsX.filter((f) => factorsY.includes(f) && f !== 1)
     const correct = pick(common)
-    const { choices, answer } = mcqFrom(correct, () => correct + pick([-2, -1, 1, 2, 3]))
+    const { choices, answer } = mcqFromExcluding(
+      correct,
+      () => Math.max(2, correct + pick([-4, -3, -2, -1, 1, 2, 3, 4])),
+      (v) => x % v === 0 && y % v === 0
+    )
     return {
       subtopicId: 'factors-common-factors',
       type: 'mcq',
@@ -143,16 +165,14 @@ function genFactorsCommonFactors(difficulty = 'medium') {
   const n = pick([12, 18, 24])
   const factors = []
   for (let i = 1; i <= n; i++) if (n % i === 0) factors.push(i)
-  const notAFactor = randInt(2, 20)
-  const candidates = shuffle([...factors.filter((f) => f !== 1 && f !== n), notAFactor]).slice(0, 4)
-  const correct = pick(factors.filter((f) => candidates.includes(f)) || [factors[1]])
-  const finalChoices = shuffle(Array.from(new Set([correct, ...candidates])).slice(0, 4).map(String))
+  const correct = pick(factors.filter((f) => f !== 1 && f !== n))
+  const { choices, answer } = mcqFromExcluding(correct, () => randInt(2, n - 1), (v) => n % v === 0)
   return {
     subtopicId: 'factors-common-factors',
     type: 'mcq',
     prompt: `Which of these numbers is a factor of ${n}?`,
-    choices: finalChoices,
-    answer: String(correct),
+    choices,
+    answer,
     hint: `A factor divides ${n} exactly, with no remainder. Try dividing each choice into ${n}.`,
   }
 }
@@ -178,7 +198,11 @@ function genMultiplesCommonMultiples(difficulty = 'medium') {
     const multiplesB = Array.from({ length: 8 }, (_, i) => b * (i + 1))
     const common = multiplesA.filter((m) => multiplesB.includes(m))
     const correct = pick(common)
-    const { choices, answer } = mcqFrom(correct, () => correct + pick([-a, -b, a, b]))
+    const { choices, answer } = mcqFromExcluding(
+      correct,
+      () => Math.max(1, correct + pick([-a, -b, a, b, 1, -1])),
+      (v) => v % a === 0 && v % b === 0
+    )
     return {
       subtopicId: 'multiples-common-multiples',
       type: 'mcq',
@@ -1466,7 +1490,11 @@ function genNumberTheoryPuzzles(difficulty = 'medium') {
     const lcm = (a * b) / gcd(a, b)
     const multiplier = randInt(2, Math.max(2, Math.floor(99 / lcm)))
     const n = lcm * multiplier
-    const { choices, answer } = mcqFrom(n, () => n + pick([-lcm, lcm, -a, a]))
+    const { choices, answer } = mcqFromExcluding(
+      n,
+      () => Math.max(10, Math.min(99, n + pick([-5, -4, -3, -2, -1, 1, 2, 3, 4, 5]))),
+      (v) => v % a === 0 && v % b === 0
+    )
     return {
       subtopicId: 'number-theory-puzzles',
       type: 'mcq',
@@ -1608,7 +1636,59 @@ const GENERATORS = {
   'perimeter-area': [genPerimeterRect, genAreaRect, genAreaComposite],
   'data-analysis': [genBarGraphQuestion, genLineGraphQuestion],
   'word-problems': [genPartWhole, genComparison, genMultiStep],
-  olympiad: [genPatternsSequences, genLogicPuzzles, genNumberTheoryPuzzles, genGeometrySpatial, genCombinatoricsCounting, genCompetitionProblems],
+}
+
+// ---------------------------------------------------------------------------
+// OLYMPIAD SYLLABUS — fixed 25-question "challenge papers", one per regular
+// syllabus chapter. Unlike the regular chapters, these are baked into a
+// static bank (src/data/olympiadBank.js via scripts/gen-olympiad-bank.mjs)
+// rather than re-randomized every session, so teachers have a stable answer
+// key. Every source generator below always runs at 'hard' difficulty and
+// each chapter mixes in whichever generic Olympiad-style generator (number
+// theory, geometry/spatial, combinatorics, patterns, logic, competition
+// word problems) best fits that topic.
+export const OLYMPIAD_CHAPTER_GENERATORS = {
+  'whole-numbers': [genNumbersTo100000, genRoundingEstimation, genPatternsSequences, genLogicPuzzles],
+  'factors-multiples': [genFactorsCommonFactors, genMultiplesCommonMultiples, genPrimeComposite, genNumberTheoryPuzzles],
+  'multiplication-division': [genMultiply2Digit, genDivide1Digit, genMultDivWordProblems, genCompetitionProblems],
+  fractions: [genMixedNumbers, genCompareFractions, genAddSubUnlikeFractions, genFractionOfSet, genFractionWordProblems],
+  decimals: [genDecimalPlaceValue, genCompareDecimals, genRoundingDecimals],
+  'decimal-operations': [genAddSubDecimals, genMultiplyDivideDecimals, genDecimalWordProblems],
+  geometry: [genAngles, genLines, genSquaresRectangles, genSymmetry, genGeometrySpatial],
+  'perimeter-area': [genPerimeterRect, genAreaRect, genAreaComposite, genGeometrySpatial],
+  'data-analysis': [genBarGraphQuestion, genLineGraphQuestion, genCombinatoricsCounting],
+}
+
+/**
+ * Author-time generator for a fixed, non-randomized 25-question Olympiad
+ * "paper" for one syllabus chapter. Every question is forced to 'hard'
+ * difficulty and deduped by prompt text. The result is meant to be baked
+ * into a static file once (see scripts/gen-olympiad-bank.mjs), not called
+ * at runtime in the app.
+ */
+export function generateOlympiadPaper(chapterId, count = 25) {
+  const pool = OLYMPIAD_CHAPTER_GENERATORS[chapterId]
+  if (!pool) return []
+  const seen = new Set()
+  const questions = []
+  let idx = 0
+  let guard = 0
+  while (questions.length < count && guard < count * 40) {
+    const generator = pool[idx % pool.length]
+    idx += 1
+    guard += 1
+    const q = generator('hard')
+    if (seen.has(q.prompt)) continue
+    seen.add(q.prompt)
+    questions.push({
+      ...q,
+      id: `olympiad-${chapterId}-${questions.length + 1}`,
+      chapterId: `olympiad-${chapterId}`,
+      subtopicId: `olympiad-${chapterId}-set`,
+      difficulty: 'hard',
+    })
+  }
+  return questions
 }
 
 const DIFFICULTY_TIERS = ['easy', 'medium', 'hard']

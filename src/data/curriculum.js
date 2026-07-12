@@ -29,7 +29,39 @@ export const LEVELS = {
   '4A': 'Level 4A',
   '4B': 'Level 4B',
   bonus: 'Bonus Practice',
+  olympiad: '🏆 Olympiad Syllabus — Challenge Papers',
 }
+
+// Fixed 25-question Olympiad "papers" — one per Grade 4 syllabus chapter.
+// Unlike the regular syllabus chapters below, these do not use the random
+// question generator: they're static, curated, uniformly hard/advanced sets
+// with a stable answer key (see src/data/olympiadBank.js). This keeps a
+// clear line between the Grade 4 syllabus (practiced with fresh random
+// questions every time) and the Olympiad syllabus (fixed challenge papers,
+// same 25 questions and answers every attempt).
+export const OLYMPIAD_CHAPTERS = [
+  { sourceId: 'whole-numbers', title: 'Whole Numbers', icon: 'Hash', gradient: 'from-slate-700 to-slate-900' },
+  { sourceId: 'factors-multiples', title: 'Multiples and Factors', icon: 'Grid3x3', gradient: 'from-slate-700 to-slate-900' },
+  { sourceId: 'multiplication-division', title: 'Multiplication and Division', icon: 'Calculator', gradient: 'from-slate-700 to-slate-900' },
+  { sourceId: 'fractions', title: 'Fractions', icon: 'PieChart', gradient: 'from-slate-700 to-slate-900' },
+  { sourceId: 'decimals', title: 'Decimals', icon: 'Percent', gradient: 'from-slate-700 to-slate-900' },
+  { sourceId: 'decimal-operations', title: 'Decimals Operations', icon: 'Sigma', gradient: 'from-slate-700 to-slate-900' },
+  { sourceId: 'geometry', title: 'Geometry', icon: 'Shapes', gradient: 'from-slate-700 to-slate-900' },
+  { sourceId: 'perimeter-area', title: 'Perimeter and Area', icon: 'Ruler', gradient: 'from-slate-700 to-slate-900' },
+  { sourceId: 'data-analysis', title: 'Data Analysis', icon: 'BarChart3', gradient: 'from-slate-700 to-slate-900' },
+].map((c, i) => ({
+  id: `olympiad-${c.sourceId}`,
+  sourceId: c.sourceId,
+  level: 'olympiad',
+  order: 100 + i,
+  title: c.title,
+  short: c.title,
+  icon: c.icon,
+  color: 'candy.yellow',
+  gradient: c.gradient,
+  description: `25 fixed, competition-level challenge questions on ${c.title}. Same difficulty as real Grade 4 math Olympiad papers.`,
+  subtopics: [{ id: `olympiad-${c.sourceId}-set`, label: '25-Question Challenge Paper' }],
+}))
 
 export const CHAPTERS = [
   // ---------------------------------------------------------------------
@@ -204,26 +236,9 @@ export const CHAPTERS = [
       { id: 'multi-step', label: 'Multi-step problems' },
     ],
   },
-  {
-    id: 'olympiad',
-    level: 'bonus',
-    order: 11,
-    title: 'Math Olympiad Prep',
-    short: 'Olympiad Prep',
-    icon: 'Trophy',
-    color: 'candy.yellow',
-    gradient: 'from-amber-400 to-yellow-500',
-    description: 'Challenge problems covering the topics most often seen in Grade 4 math competitions (SASMO, Math Kangaroo, and similar): patterns, logic, number theory, geometry, counting, and word problems.',
-    subtopics: [
-      { id: 'patterns-sequences', label: 'Number patterns & sequences' },
-      { id: 'logic-puzzles', label: 'Logic puzzles & digit riddles' },
-      { id: 'number-theory-puzzles', label: 'Number theory puzzles' },
-      { id: 'geometry-spatial', label: 'Geometry & spatial reasoning' },
-      { id: 'combinatorics-counting', label: 'Combinatorics & counting' },
-      { id: 'competition-problems', label: 'Competition-style word problems' },
-    ],
-  },
 ]
+
+CHAPTERS.push(...OLYMPIAD_CHAPTERS)
 
 export const CHAPTER_ICONS = {
   Hash,
@@ -243,6 +258,8 @@ export const getChapterById = (id) => CHAPTERS.find((c) => c.id === id)
 
 export const chaptersByLevel = (level) => CHAPTERS.filter((c) => c.level === level)
 
+const CORE_SYLLABUS_CHAPTER_COUNT = CHAPTERS.filter((c) => c.level === '4A' || c.level === '4B').length
+
 export const BADGES = [
   { id: 'first-steps', label: 'First Steps', description: 'Complete your first quest', icon: '🌱', condition: (s) => s.totalQuestsCompleted >= 1 },
   { id: 'streak-3', label: 'On Fire', description: '3-day streak', icon: '🔥', condition: (s) => s.streak >= 3 },
@@ -250,9 +267,9 @@ export const BADGES = [
   { id: 'point-collector', label: 'Point Collector', description: 'Earn 500 Math Points', icon: '💎', condition: (s) => s.points >= 500 },
   { id: 'point-master', label: 'Math Master', description: 'Earn 2000 Math Points', icon: '👑', condition: (s) => s.points >= 2000 },
   { id: 'perfect-score', label: 'Perfectionist', description: 'Score 100% on a quest', icon: '🌟', condition: (s) => s.hasPerfectScore },
-  { id: 'all-rounder', label: 'All-Rounder', description: 'Practice every chapter at least once', icon: '🏆', condition: (s) => s.chaptersTriedCount >= CHAPTERS.length },
+  { id: 'all-rounder', label: 'All-Rounder', description: 'Practice every Grade 4 syllabus chapter at least once', icon: '🏆', condition: (s) => s.chaptersTriedCount >= CORE_SYLLABUS_CHAPTER_COUNT },
   { id: 'level-5', label: 'Rising Star', description: 'Reach Level 5', icon: '🚀', condition: (s) => s.level >= 5 },
-  { id: 'olympiad-challenger', label: 'Olympiad Challenger', description: 'Try a Math Olympiad Prep quest', icon: '🥇', condition: (s) => (s.chaptersTried || []).includes('olympiad') },
+  { id: 'olympiad-challenger', label: 'Olympiad Challenger', description: 'Attempt an Olympiad Syllabus challenge paper', icon: '🥇', condition: (s) => (s.chaptersTried || []).some((id) => id.startsWith('olympiad-')) },
 ]
 
 export const LEVEL_XP_STEP = 200 // XP required per level

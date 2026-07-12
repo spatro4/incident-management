@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Flame, Star, Trophy, Rocket, Megaphone, ChevronRight } from 'lucide-react'
+import { Flame, Star, Trophy, Rocket, Megaphone, ChevronRight, GraduationCap } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { CHAPTERS, CHAPTER_ICONS, BADGES, LEVELS } from '../../data/curriculum'
 import ProgressBar from '../common/ProgressBar'
@@ -115,12 +115,29 @@ export default function StudentDashboard() {
 
       {/* Chapters grid, grouped by level */}
       <div className="space-y-6">
-        {Object.entries(LEVELS).map(([levelKey, levelLabel]) => {
+        {Object.entries(LEVELS).map(([levelKey, levelLabel], idx) => {
           const chaptersInLevel = CHAPTERS.filter((c) => c.level === levelKey)
           if (chaptersInLevel.length === 0) return null
+          const isOlympiadSection = levelKey === 'olympiad'
           return (
             <div key={levelKey}>
-              <h3 className="font-display font-bold text-slate-700 mb-3">{levelLabel}</h3>
+              {idx === 0 && (
+                <p className="text-xs font-bold uppercase tracking-wide text-indigo-400 mb-2 flex items-center gap-1.5">
+                  <GraduationCap size={14} /> Grade 4 Syllabus
+                </p>
+              )}
+              {isOlympiadSection ? (
+                <div className="rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border-2 border-amber-400/60 p-4 mb-3">
+                  <h3 className="font-display font-extrabold text-amber-400 flex items-center gap-2 text-sm uppercase tracking-wide">
+                    <Trophy size={16} /> Olympiad Syllabus — Advanced Challenge Papers
+                  </h3>
+                  <p className="text-slate-300 text-xs mt-1">
+                    Fixed, competition-level papers — much harder than the regular syllabus above. Same 25 questions and answers every attempt.
+                  </p>
+                </div>
+              ) : (
+                <h3 className="font-display font-bold text-slate-700 mb-3">{levelLabel}</h3>
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {chaptersInLevel.map((chapter) => {
                   const Icon = CHAPTER_ICONS[chapter.icon]
@@ -128,26 +145,38 @@ export default function StudentDashboard() {
                   const mastery = cs && cs.attempts > 0 ? Math.round((cs.correct / cs.attempts) * 100) : 0
                   const isLocked = (state.assignments.lockedChapters || []).includes(chapter.id)
                   return (
-                    <div key={chapter.id} className="card-playful p-4 flex flex-col gap-3">
+                    <div
+                      key={chapter.id}
+                      className={`card-playful p-4 flex flex-col gap-3 ${isOlympiadSection ? '!bg-slate-900 !border-slate-700' : ''}`}
+                    >
                       <div className="flex items-center gap-3">
                         <div className={`p-3 rounded-2xl bg-gradient-to-br ${chapter.gradient}`}>
-                          {Icon && <Icon size={22} className="text-white" />}
+                          {Icon && <Icon size={22} className={isOlympiadSection ? 'text-amber-400' : 'text-white'} />}
                         </div>
                         <div className="flex-1">
-                          <p className="font-display font-bold text-slate-700">{chapter.title}</p>
-                          <p className="text-xs text-slate-400">{chapter.description}</p>
+                          <p className={`font-display font-bold ${isOlympiadSection ? 'text-white' : 'text-slate-700'}`}>{chapter.title}</p>
+                          <p className={`text-xs ${isOlympiadSection ? 'text-slate-300' : 'text-slate-400'}`}>{chapter.description}</p>
                         </div>
                       </div>
-                      <ProgressBar value={mastery} max={100} colorClass="bg-candy-green" height="h-2.5" showLabel label="Mastery" />
+                      <ProgressBar
+                        value={mastery}
+                        max={100}
+                        colorClass={isOlympiadSection ? 'bg-amber-400' : 'bg-candy-green'}
+                        height="h-2.5"
+                        showLabel
+                        label="Mastery"
+                      />
                       <button
                         disabled={isLocked}
                         onClick={() => {
                           setActiveChapterId(chapter.id)
                           setView('chapter')
                         }}
-                        className="btn-chunky bg-slate-800 disabled:bg-slate-300 text-white text-sm py-2.5 mt-1"
+                        className={`btn-chunky disabled:bg-slate-300 text-white text-sm py-2.5 mt-1 ${
+                          isOlympiadSection ? 'bg-amber-500' : 'bg-slate-800'
+                        }`}
                       >
-                        {isLocked ? 'Locked by Teacher' : 'Practice This Chapter'}
+                        {isLocked ? 'Locked by Teacher' : isOlympiadSection ? 'Start Challenge Paper' : 'Practice This Chapter'}
                       </button>
                     </div>
                   )

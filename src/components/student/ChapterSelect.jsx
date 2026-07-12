@@ -1,8 +1,9 @@
-import { Lock, Check } from 'lucide-react'
+import { Lock, Check, Trophy, GraduationCap } from 'lucide-react'
 import { CHAPTERS, CHAPTER_ICONS, LEVELS } from '../../data/curriculum'
 
 function ChapterCard({ chapter, isSelected, isLocked, isForced, onToggle }) {
   const Icon = CHAPTER_ICONS[chapter.icon]
+  const isOlympiad = chapter.level === 'olympiad'
   return (
     <button
       disabled={isLocked}
@@ -12,15 +13,19 @@ function ChapterCard({ chapter, isSelected, isLocked, isForced, onToggle }) {
           ? 'bg-slate-100 border-slate-200 opacity-60 cursor-not-allowed'
           : isSelected
             ? `bg-gradient-to-br ${chapter.gradient} border-white text-white shadow-chunky-sm`
-            : 'bg-white border-slate-200 hover:border-indigo-300'
+            : isOlympiad
+              ? 'bg-slate-900 border-slate-700 hover:border-amber-400'
+              : 'bg-white border-slate-200 hover:border-indigo-300'
       }`}
     >
-      <div className={`p-2 rounded-xl ${isSelected ? 'bg-white/25' : 'bg-slate-100'}`}>
-        {Icon && <Icon size={22} className={isSelected ? 'text-white' : 'text-slate-500'} />}
+      <div className={`p-2 rounded-xl ${isSelected ? 'bg-white/25' : isOlympiad ? 'bg-white/10' : 'bg-slate-100'}`}>
+        {Icon && <Icon size={22} className={isSelected || isOlympiad ? 'text-amber-400' : 'text-slate-500'} />}
       </div>
       <div className="flex-1">
-        <p className={`font-display font-bold ${isSelected ? 'text-white' : 'text-slate-700'}`}>{chapter.title}</p>
-        <p className={`text-xs mt-0.5 ${isSelected ? 'text-white/90' : 'text-slate-400'}`}>{chapter.description}</p>
+        <p className={`font-display font-bold ${isSelected || isOlympiad ? 'text-white' : 'text-slate-700'}`}>{chapter.title}</p>
+        <p className={`text-xs mt-0.5 ${isSelected ? 'text-white/90' : isOlympiad ? 'text-slate-300' : 'text-slate-400'}`}>
+          {chapter.description}
+        </p>
         {isForced && (
           <span className="inline-block mt-2 text-[10px] font-bold uppercase tracking-wide bg-amber-400 text-white px-2 py-0.5 rounded-full">
             Assigned by Teacher
@@ -36,12 +41,29 @@ function ChapterCard({ chapter, isSelected, isLocked, isForced, onToggle }) {
 export default function ChapterSelect({ selected, onToggle, lockedChapters = [], forcedChapters = [] }) {
   return (
     <div className="space-y-5">
-      {Object.entries(LEVELS).map(([levelKey, levelLabel]) => {
+      {Object.entries(LEVELS).map(([levelKey, levelLabel], idx) => {
         const chaptersInLevel = CHAPTERS.filter((c) => c.level === levelKey)
         if (chaptersInLevel.length === 0) return null
+        const isOlympiadSection = levelKey === 'olympiad'
         return (
           <div key={levelKey}>
-            <p className="text-xs font-bold uppercase tracking-wide text-slate-400 mb-2">{levelLabel}</p>
+            {idx === 0 && (
+              <p className="text-xs font-bold uppercase tracking-wide text-indigo-400 mb-2 flex items-center gap-1.5">
+                <GraduationCap size={14} /> Grade 4 Syllabus
+              </p>
+            )}
+            {isOlympiadSection ? (
+              <div className="rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border-2 border-amber-400/60 p-4 mb-3">
+                <p className="font-display font-extrabold text-amber-400 flex items-center gap-2 text-sm uppercase tracking-wide">
+                  <Trophy size={16} /> Olympiad Syllabus — Advanced Challenge Papers
+                </p>
+                <p className="text-slate-300 text-xs mt-1">
+                  Fixed, competition-level papers — much harder than the regular syllabus above. Same 25 questions and answers every attempt.
+                </p>
+              </div>
+            ) : (
+              <p className="text-xs font-bold uppercase tracking-wide text-slate-400 mb-2">{levelLabel}</p>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {chaptersInLevel.map((chapter) => (
                 <ChapterCard
