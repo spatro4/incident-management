@@ -126,7 +126,11 @@ function genRoundingEstimation(difficulty = 'medium') {
 // ---------------------------------------------------------------------------
 function genFactorsCommonFactors(difficulty = 'medium') {
   if (difficulty === 'hard') {
-    const pairs = [[12, 18], [16, 24], [20, 30], [18, 27], [24, 36], [15, 25], [14, 21], [28, 42]]
+    const pairs = [
+      [12, 18], [16, 24], [20, 30], [18, 27], [24, 36], [15, 25], [14, 21], [28, 42],
+      [10, 15], [21, 28], [16, 40], [27, 36], [22, 33], [20, 50], [18, 24], [30, 45],
+      [32, 48], [26, 39], [12, 30], [35, 49],
+    ]
     const [x, y] = pick(pairs)
     const gcf = gcd(x, y)
     const { choices, answer } = mcqFrom(gcf, () => Math.max(1, gcf + pick([-3, -2, -1, 1, 2, 3])))
@@ -179,7 +183,11 @@ function genFactorsCommonFactors(difficulty = 'medium') {
 
 function genMultiplesCommonMultiples(difficulty = 'medium') {
   if (difficulty === 'hard') {
-    const pairs = [[4, 6], [3, 5], [6, 8], [4, 10], [5, 6], [3, 4], [6, 9], [8, 12]]
+    const pairs = [
+      [4, 6], [3, 5], [6, 8], [4, 10], [5, 6], [3, 4], [6, 9], [8, 12],
+      [4, 9], [3, 8], [5, 8], [6, 10], [9, 12], [4, 14], [7, 10], [5, 9],
+      [6, 14], [8, 10], [3, 14], [9, 15],
+    ]
     const [x, y] = pick(pairs)
     const lcm = (x * y) / gcd(x, y)
     const { choices, answer } = mcqFrom(lcm, () => lcm + pick([-x, -y, x, y]))
@@ -1485,7 +1493,10 @@ function genCompetitionProblems(difficulty = 'medium') {
 
 function genNumberTheoryPuzzles(difficulty = 'medium') {
   if (difficulty === 'hard') {
-    const pairs = [[4, 6], [3, 4], [2, 9], [4, 10], [3, 5], [6, 8]]
+    const pairs = [
+      [4, 6], [3, 4], [2, 9], [4, 10], [3, 5], [6, 8],
+      [4, 9], [3, 7], [5, 6], [4, 8], [2, 7], [3, 10], [5, 7], [6, 10], [4, 12],
+    ]
     const [a, b] = pick(pairs)
     const lcm = (a * b) / gcd(a, b)
     const multiplier = randInt(2, Math.max(2, Math.floor(99 / lcm)))
@@ -1716,28 +1727,97 @@ function genCodingDecoding() {
   }
 }
 
+const MIRROR_SYMMETRIC_LETTERS = new Set(['A', 'H', 'I', 'M', 'O', 'T', 'U', 'V', 'W', 'X', 'Y'])
+const MIRROR_ASYMMETRIC_LETTERS = ['B', 'C', 'D', 'E', 'F', 'G', 'J', 'K', 'L', 'N', 'P', 'Q', 'R', 'S', 'Z']
+const MIRROR_WORDS = [
+  'MATH', 'HOME', 'TOYS', 'KITE', 'DOVE', 'FISH', 'BIRD', 'TREE', 'BOOK', 'DESK',
+  'LAMP', 'STAR', 'MOON', 'RAIN', 'SNOW', 'WIND', 'LEAF', 'ROOT', 'SEED', 'FARM',
+  'GATE', 'ROAD', 'LAKE', 'HILL', 'CAVE', 'ROCK', 'SAND', 'WAVE', 'SHIP', 'BOAT',
+  'MOUTH', 'HOUSE', 'WATER', 'TIGER', 'HONEY', 'MUSIC', 'HAPPY', 'YOUTH',
+]
+
+function mirrorClockTime() {
+  const h = randInt(1, 12)
+  const m = pick([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55])
+  const total = (h % 12) * 60 + m
+  const mirrorTotal = (720 - total) % 720
+  let mh = Math.floor(mirrorTotal / 60)
+  const mm = mirrorTotal % 60
+  if (mh === 0) mh = 12
+  return { h, m, mh, mm }
+}
+
+const EMBEDDED_FIGURE_FACTS = [
+  { prompt: 'A square has both of its diagonals drawn. How many triangles can you count in the figure?', answer: 8, hint: 'The two diagonals split the square into 4 small triangles, which also combine into 4 larger ones.' },
+  { prompt: 'A square has only ONE diagonal drawn. How many triangles can you count in the figure?', answer: 2, hint: 'One diagonal splits a square into exactly two triangles.' },
+  { prompt: 'A triangle is divided into 4 smaller triangles by joining the midpoints of its three sides. How many triangles are in the figure in total?', answer: 5, hint: 'Count the 4 small triangles, plus the 1 big outer triangle they form together.' },
+  { prompt: 'A big square is divided into a 2×2 grid of 4 equal small squares. How many squares (of any size) can you count in the figure?', answer: 5, hint: 'Count the 4 small squares, then add the 1 big square they form together.' },
+  { prompt: 'A big square is divided into a 3×3 grid of 9 equal small squares. How many squares (of any size) can you count in the figure?', answer: 14, hint: 'Count the 9 smallest squares, then the 4 medium (2×2) squares, then the 1 biggest square: 9 + 4 + 1.' },
+  { prompt: 'A rectangle is divided into a grid of 2 rows and 3 columns of equal small rectangles. How many rectangles (of any size) can you count in the figure?', answer: 18, hint: 'Use rectangle counting: choose 2 of the 3 horizontal lines and 2 of the 4 vertical lines — the number of ways to pick each pair, multiplied together.' },
+  { prompt: 'A rectangle has both of its diagonals drawn. How many triangles can you count in the figure?', answer: 4, hint: 'The two diagonals cross at the center, splitting the rectangle into 4 triangles.' },
+]
+
 function genMirrorEmbedded() {
-  const symmetric = ['A', 'H', 'I', 'M', 'O', 'T', 'U', 'V', 'W', 'X', 'Y']
-  const asymmetric = ['B', 'C', 'D', 'E', 'F', 'G', 'J', 'K', 'L', 'N', 'P', 'Q', 'R', 'S', 'Z']
-  const askSymmetric = Math.random() < 0.5
-  if (askSymmetric) {
-    const correct = pick(symmetric)
-    const { choices, answer } = mcqFrom(correct, () => pick(asymmetric), (v) => v)
+  const mode = pick(['word-sym-count', 'word-asym-count', 'mirror-clock', 'embedded-count', 'symmetric-letter', 'asymmetric-letter'])
+
+  if (mode === 'word-sym-count' || mode === 'word-asym-count') {
+    const word = pick(MIRROR_WORDS)
+    const letters = word.split('')
+    const symCount = letters.filter((l) => MIRROR_SYMMETRIC_LETTERS.has(l)).length
+    const askSym = mode === 'word-sym-count'
+    const count = askSym ? symCount : letters.length - symCount
+    return {
+      subtopicId: 'mirror-embedded-figures',
+      type: 'input',
+      prompt: `In the word ${word}, how many letters ${askSym ? 'have a vertical line of symmetry (look the same in a mirror)' : 'do NOT look the same when reflected in a mirror'}? (Symmetric letters: A, H, I, M, O, T, U, V, W, X, Y)`,
+      answer: String(count),
+      hint: `Go letter by letter through ${word} and check which ones are in the symmetric list: A, H, I, M, O, T, U, V, W, X, Y.`,
+    }
+  }
+
+  if (mode === 'mirror-clock') {
+    const { h, m, mh, mm } = mirrorClockTime()
+    const time = `${h}:${String(m).padStart(2, '0')}`
+    const mirrorTime = `${mh}:${String(mm).padStart(2, '0')}`
+    return {
+      subtopicId: 'mirror-embedded-figures',
+      type: 'input',
+      prompt: `A clock shows the time ${time}. What time does its mirror image show? (Answer as H:MM, e.g. 6:30)`,
+      answer: mirrorTime,
+      hint: `For a mirror-image clock time, the hour and minute hands' positions flip left-right. A quick trick: the original time and its mirror image always add up to 12:00 (i.e. 720 minutes).`,
+    }
+  }
+
+  if (mode === 'embedded-count') {
+    const fact = pick(EMBEDDED_FIGURE_FACTS)
+    return {
+      subtopicId: 'mirror-embedded-figures',
+      type: 'input',
+      prompt: fact.prompt,
+      answer: String(fact.answer),
+      hint: fact.hint,
+    }
+  }
+
+  if (mode === 'symmetric-letter') {
+    const correct = pick([...MIRROR_SYMMETRIC_LETTERS])
+    const { choices, answer } = mcqFrom(correct, () => pick(MIRROR_ASYMMETRIC_LETTERS), (v) => v)
     return {
       subtopicId: 'mirror-embedded-figures',
       type: 'mcq',
-      prompt: `Which of these letters looks exactly the same when reflected in a mirror (has a vertical line of symmetry)?`,
+      prompt: `Which of these letters looks exactly the same when reflected in a mirror (has a vertical line of symmetry): ${choices.join(', ')}?`,
       choices,
       answer,
       hint: `Imagine folding the letter down the middle vertically — if both halves match perfectly, it has a vertical line of symmetry.`,
     }
   }
-  const correct = pick(asymmetric)
-  const { choices, answer } = mcqFrom(correct, () => pick(symmetric), (v) => v)
+
+  const correct = pick(MIRROR_ASYMMETRIC_LETTERS)
+  const { choices, answer } = mcqFrom(correct, () => pick([...MIRROR_SYMMETRIC_LETTERS]), (v) => v)
   return {
     subtopicId: 'mirror-embedded-figures',
     type: 'mcq',
-    prompt: `Which of these letters does NOT look the same when reflected in a mirror?`,
+    prompt: `Which of these letters does NOT look the same when reflected in a mirror: ${choices.join(', ')}?`,
     choices,
     answer,
     hint: `A letter has a vertical line of symmetry if folding it down the middle makes both halves match exactly. Look for one where they don't.`,
@@ -1997,46 +2077,23 @@ const GENERATORS = {
 // re-randomized every session, so teachers have a stable answer key. Every
 // generator below always runs at 'hard' difficulty.
 export const OLYMPIAD_CHAPTER_GENERATORS = {
-  'logical-reasoning': [
-    genPatternsSequences, // Patterns and Series
-    genAnalogyClassification, // Analogy and Classification
-    genCodingDecoding, // Coding-Decoding
-    genMirrorEmbedded, // Mirror Images and Embedded Figures
-    genAlphabetRanking, // Alphabet and Ranking Test
-    genDirectionSense, // Direction Sense Test
-  ],
-  'mathematical-reasoning': [
-    genNumbersTo100000, // Number System and Number Sense
-    genPrimeComposite,
-    genRoundingEstimation,
-    genFactorsCommonFactors, // Factors and Multiples
-    genMultiplesCommonMultiples,
-    genNumberTheoryPuzzles,
-    genComputationOperations, // Computation Operations
-    genMixedNumbers, // Fractions and Decimals
-    genCompareFractions,
-    genAddSubUnlikeFractions,
-    genDecimalPlaceValue,
-    genCompareDecimals,
-    genMeasurement, // Measurement
-    genTimeCalendar, // Time and Calendar
-    genMoney, // Money
-    genAngles, // Geometry
-    genLines,
-    genSquaresRectangles,
-    genSymmetry,
-    genGeometrySpatial,
-    genPerimeterRect, // Perimeter and Area
-    genAreaRect,
-    genAreaComposite,
-    genBarGraphQuestion, // Data Handling
-    genLineGraphQuestion,
-    genCombinatoricsCounting,
-  ],
-  achievers: [
-    genCompetitionProblems, // Higher-Order Thinking Skills (HOTs)
-    genLogicPuzzles,
-  ],
+  'patterns-series': [genPatternsSequences],
+  'analogy-classification': [genAnalogyClassification],
+  'coding-decoding': [genCodingDecoding],
+  'mirror-embedded-figures': [genMirrorEmbedded],
+  'alphabet-ranking': [genAlphabetRanking],
+  'direction-sense': [genDirectionSense],
+  'number-system-sense': [genNumbersTo100000, genPrimeComposite, genRoundingEstimation],
+  'factors-multiples-olympiad': [genFactorsCommonFactors, genMultiplesCommonMultiples, genNumberTheoryPuzzles],
+  'computation-operations': [genComputationOperations, genMultiply2Digit, genDivide1Digit],
+  'fractions-decimals-olympiad': [genMixedNumbers, genCompareFractions, genAddSubUnlikeFractions, genDecimalPlaceValue, genCompareDecimals],
+  measurement: [genMeasurement],
+  'time-calendar': [genTimeCalendar],
+  money: [genMoney],
+  'geometry-olympiad': [genAngles, genLines, genSquaresRectangles, genSymmetry, genGeometrySpatial],
+  'perimeter-area-olympiad': [genPerimeterRect, genAreaRect, genAreaComposite],
+  'data-handling': [genBarGraphQuestion, genLineGraphQuestion, genCombinatoricsCounting],
+  achievers: [genCompetitionProblems, genLogicPuzzles],
 }
 
 /**

@@ -15,6 +15,15 @@ import {
   Trophy,
   Brain,
   Award,
+  Repeat,
+  Shuffle,
+  Binary,
+  FlipHorizontal2,
+  ListOrdered,
+  Compass,
+  Scale,
+  CalendarClock,
+  Coins,
 } from 'lucide-react'
 
 export const DIFFICULTIES = ['easy', 'medium', 'hard']
@@ -34,10 +43,9 @@ export const LEVELS = {
   olympiad: '🏆 Olympiad Syllabus — Challenge Papers',
 }
 
-// Fixed 25-question Olympiad "papers", organized into the three standard
-// sections used by real Grade 4 math olympiad exams (SOF-IMO, NSO, and
-// similar): Logical Reasoning, Mathematical Reasoning, and an Achievers
-// Section of higher-order-thinking problems. Unlike the regular syllabus
+// Fixed 25-question Olympiad "papers", one per individual topic in the
+// official Grade 4 Olympiad syllabus (16 topics, plus a bonus Achievers
+// Section of higher-order-thinking problems). Unlike the regular syllabus
 // chapters above, these do not use the random question generator: they're
 // static, curated, uniformly hard/advanced sets with a stable answer key
 // (see src/data/olympiadBank.js). This keeps a clear line between the
@@ -46,52 +54,160 @@ export const LEVELS = {
 // answers every attempt).
 export const OLYMPIAD_CHAPTERS = [
   {
-    sourceId: 'logical-reasoning',
-    title: 'Logical Reasoning',
-    icon: 'Brain',
+    sourceId: 'patterns-series',
+    title: 'Patterns and Series',
+    icon: 'Repeat',
     gradient: 'from-slate-700 to-slate-900',
-    description:
-      '25 fixed, competition-level questions: patterns & series, analogy & classification, coding-decoding, mirror images, alphabet & ranking, direction sense.',
-    subtopics: [
-      { id: 'patterns-sequences', label: 'Patterns and Series' },
-      { id: 'analogy-classification', label: 'Analogy and Classification' },
-      { id: 'coding-decoding', label: 'Coding-Decoding' },
-      { id: 'mirror-embedded-figures', label: 'Mirror Images and Embedded Figures' },
-      { id: 'alphabet-ranking', label: 'Alphabet and Ranking Test' },
-      { id: 'direction-sense', label: 'Direction Sense Test' },
-    ],
+    description: '25 fixed, competition-level questions on number and shape patterns and series.',
+    subtopics: [{ id: 'patterns-sequences', label: 'Patterns and Series' }],
   },
   {
-    sourceId: 'mathematical-reasoning',
-    title: 'Mathematical Reasoning',
-    icon: 'Calculator',
+    sourceId: 'analogy-classification',
+    title: 'Analogy and Classification',
+    icon: 'Shuffle',
     gradient: 'from-slate-700 to-slate-900',
-    description:
-      '25 fixed, competition-level questions spanning number sense, factors & multiples, computation, fractions & decimals, measurement, time, money, geometry, perimeter & area, and data handling.',
+    description: '25 fixed, competition-level questions on number/word analogies and odd-one-out classification.',
+    subtopics: [{ id: 'analogy-classification', label: 'Analogy and Classification' }],
+  },
+  {
+    sourceId: 'coding-decoding',
+    title: 'Coding-Decoding',
+    icon: 'Binary',
+    gradient: 'from-slate-700 to-slate-900',
+    description: '25 fixed, competition-level letter/number coding-decoding puzzles.',
+    subtopics: [{ id: 'coding-decoding', label: 'Coding-Decoding' }],
+  },
+  {
+    sourceId: 'mirror-embedded-figures',
+    title: 'Mirror Images and Embedded Figures',
+    icon: 'FlipHorizontal2',
+    gradient: 'from-slate-700 to-slate-900',
+    description: '25 fixed, competition-level mirror-image and embedded/hidden-figure questions.',
+    subtopics: [{ id: 'mirror-embedded-figures', label: 'Mirror Images and Embedded Figures' }],
+  },
+  {
+    sourceId: 'alphabet-ranking',
+    title: 'Alphabet and Ranking Test',
+    icon: 'ListOrdered',
+    gradient: 'from-slate-700 to-slate-900',
+    description: '25 fixed, competition-level alphabet-order and ranking/position puzzles.',
+    subtopics: [{ id: 'alphabet-ranking', label: 'Alphabet and Ranking Test' }],
+  },
+  {
+    sourceId: 'direction-sense',
+    title: 'Direction Sense Test',
+    icon: 'Compass',
+    gradient: 'from-slate-700 to-slate-900',
+    description: '25 fixed, competition-level direction-and-distance reasoning questions.',
+    subtopics: [{ id: 'direction-sense', label: 'Direction Sense Test' }],
+  },
+  {
+    sourceId: 'number-system-sense',
+    title: 'Number System and Number Sense',
+    icon: 'Hash',
+    gradient: 'from-slate-700 to-slate-900',
+    description: '25 fixed, competition-level questions on large numbers, place value, rounding, and prime/composite numbers.',
     subtopics: [
       { id: 'numbers-to-100000', label: 'Number System and Number Sense' },
       { id: 'prime-composite', label: 'Number System and Number Sense' },
       { id: 'rounding-estimation', label: 'Number System and Number Sense' },
+    ],
+  },
+  {
+    sourceId: 'factors-multiples-olympiad',
+    title: 'Factors and Multiples',
+    icon: 'Grid3x3',
+    gradient: 'from-slate-700 to-slate-900',
+    description: '25 fixed, competition-level questions on factors, common factors, multiples, common multiples, and number theory.',
+    subtopics: [
       { id: 'factors-common-factors', label: 'Factors and Multiples' },
       { id: 'multiples-common-multiples', label: 'Factors and Multiples' },
       { id: 'number-theory-puzzles', label: 'Factors and Multiples' },
+    ],
+  },
+  {
+    sourceId: 'computation-operations',
+    title: 'Computation Operations',
+    icon: 'Calculator',
+    gradient: 'from-slate-700 to-slate-900',
+    description: '25 fixed, competition-level mixed +, -, ×, ÷ computation and BODMAS-style questions.',
+    subtopics: [
       { id: 'computation-operations', label: 'Computation Operations' },
+      { id: 'multiply-2digit', label: 'Computation Operations' },
+      { id: 'divide-1digit', label: 'Computation Operations' },
+    ],
+  },
+  {
+    sourceId: 'fractions-decimals-olympiad',
+    title: 'Fractions and Decimals',
+    icon: 'PieChart',
+    gradient: 'from-slate-700 to-slate-900',
+    description: '25 fixed, competition-level questions spanning mixed numbers, unlike fractions, and decimal place value/comparison.',
+    subtopics: [
       { id: 'mixed-improper', label: 'Fractions and Decimals' },
       { id: 'comparing-ordering-fractions', label: 'Fractions and Decimals' },
       { id: 'add-sub-unlike', label: 'Fractions and Decimals' },
       { id: 'tenths-hundredths-thousandths', label: 'Fractions and Decimals' },
       { id: 'comparing-ordering-decimals', label: 'Fractions and Decimals' },
-      { id: 'measurement', label: 'Measurement' },
-      { id: 'time-calendar', label: 'Time and Calendar' },
-      { id: 'money', label: 'Money' },
+    ],
+  },
+  {
+    sourceId: 'measurement',
+    title: 'Measurement',
+    icon: 'Scale',
+    gradient: 'from-slate-700 to-slate-900',
+    description: '25 fixed, competition-level questions on units of length, mass, volume, and conversions.',
+    subtopics: [{ id: 'measurement', label: 'Measurement' }],
+  },
+  {
+    sourceId: 'time-calendar',
+    title: 'Time and Calendar',
+    icon: 'CalendarClock',
+    gradient: 'from-slate-700 to-slate-900',
+    description: '25 fixed, competition-level questions on time elapsed, clocks, and calendar reasoning.',
+    subtopics: [{ id: 'time-calendar', label: 'Time and Calendar' }],
+  },
+  {
+    sourceId: 'money',
+    title: 'Money',
+    icon: 'Coins',
+    gradient: 'from-slate-700 to-slate-900',
+    description: '25 fixed, competition-level questions on money computations, change, and word problems.',
+    subtopics: [{ id: 'money', label: 'Money' }],
+  },
+  {
+    sourceId: 'geometry-olympiad',
+    title: 'Geometry',
+    icon: 'Shapes',
+    gradient: 'from-slate-700 to-slate-900',
+    description: '25 fixed, competition-level questions on angles, lines, squares/rectangles, symmetry, and spatial reasoning.',
+    subtopics: [
       { id: 'angles-protractor', label: 'Geometry' },
       { id: 'perpendicular-parallel', label: 'Geometry' },
       { id: 'squares-rectangles', label: 'Geometry' },
       { id: 'symmetry', label: 'Geometry' },
       { id: 'geometry-spatial', label: 'Geometry' },
+    ],
+  },
+  {
+    sourceId: 'perimeter-area-olympiad',
+    title: 'Perimeter and Area',
+    icon: 'Ruler',
+    gradient: 'from-slate-700 to-slate-900',
+    description: '25 fixed, competition-level questions on perimeter, area, and composite-figure area.',
+    subtopics: [
       { id: 'perimeter-squares-rectangles', label: 'Perimeter and Area' },
       { id: 'area-squares-rectangles', label: 'Perimeter and Area' },
       { id: 'area-composite', label: 'Perimeter and Area' },
+    ],
+  },
+  {
+    sourceId: 'data-handling',
+    title: 'Data Handling',
+    icon: 'BarChart3',
+    gradient: 'from-slate-700 to-slate-900',
+    description: '25 fixed, competition-level questions on tables, bar graphs, line graphs, and counting/combinatorics.',
+    subtopics: [
       { id: 'tables-bar-graphs', label: 'Data Handling' },
       { id: 'line-graphs', label: 'Data Handling' },
       { id: 'combinatorics-counting', label: 'Data Handling' },
@@ -310,6 +426,15 @@ export const CHAPTER_ICONS = {
   Trophy,
   Brain,
   Award,
+  Repeat,
+  Shuffle,
+  Binary,
+  FlipHorizontal2,
+  ListOrdered,
+  Compass,
+  Scale,
+  CalendarClock,
+  Coins,
 }
 
 export const getChapterById = (id) => CHAPTERS.find((c) => c.id === id)
