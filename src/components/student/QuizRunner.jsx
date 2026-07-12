@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { CheckCircle2, XCircle, Lightbulb, ArrowRight, Sparkles } from 'lucide-react'
 import { checkAnswer } from '../../utils/mathEngine'
-import { getChapterById } from '../../data/curriculum'
+import { getChapterById, DIFFICULTY_LABELS } from '../../data/curriculum'
 import { XP_PER_CORRECT } from '../../data/curriculum'
 import BarModelVisualizer from './BarModelVisualizer'
 import MiniChart from './MiniChart'
@@ -102,9 +102,24 @@ export default function QuizRunner({ questions, mode = 'quest', onComplete, onEx
         <span className="font-display font-bold text-slate-500 text-sm">
           Question {index + 1} of {questions.length}
         </span>
-        <span className={`text-xs font-bold px-3 py-1 rounded-full bg-gradient-to-r ${chapter?.gradient || 'from-slate-300 to-slate-400'} text-white`}>
-          {chapter?.short}
-        </span>
+        <div className="flex items-center gap-2">
+          {question.difficulty && (
+            <span
+              className={`text-xs font-bold px-3 py-1 rounded-full ${
+                question.difficulty === 'easy'
+                  ? 'bg-emerald-100 text-emerald-600'
+                  : question.difficulty === 'hard'
+                    ? 'bg-rose-100 text-rose-600'
+                    : 'bg-amber-100 text-amber-600'
+              }`}
+            >
+              {DIFFICULTY_LABELS[question.difficulty]}
+            </span>
+          )}
+          <span className={`text-xs font-bold px-3 py-1 rounded-full bg-gradient-to-r ${chapter?.gradient || 'from-slate-300 to-slate-400'} text-white`}>
+            {chapter?.short}
+          </span>
+        </div>
       </div>
       <ProgressBar value={progressPct} max={100} colorClass="bg-candy-purple" height="h-3" />
 

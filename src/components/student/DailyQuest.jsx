@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Rocket, Sparkles } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
-import { generateQuestions } from '../../utils/mathEngine'
-import { CHAPTERS, BADGES } from '../../data/curriculum'
+import { generateQuestions, generateChapterPractice } from '../../utils/mathEngine'
+import { CHAPTERS, BADGES, CHAPTER_PRACTICE_LENGTH } from '../../data/curriculum'
 import ChapterSelect from './ChapterSelect'
 import QuizRunner from './QuizRunner'
 import Results from './Results'
@@ -23,7 +23,7 @@ export default function DailyQuest({ onDone, initialChapterId }) {
         : CHAPTERS.slice(0, 2).map((c) => c.id)
   )
   const [questions, setQuestions] = useState(() =>
-    initialChapterId ? generateQuestions([initialChapterId], QUESTION_COUNT) : []
+    initialChapterId ? generateChapterPractice(initialChapterId, CHAPTER_PRACTICE_LENGTH) : []
   )
   const [summary, setSummary] = useState(null)
   const [newBadges, setNewBadges] = useState([])
@@ -36,7 +36,11 @@ export default function DailyQuest({ onDone, initialChapterId }) {
 
   const start = () => {
     if (selected.length === 0) return
-    setQuestions(generateQuestions(selected, QUESTION_COUNT))
+    if (selected.length === 1) {
+      setQuestions(generateChapterPractice(selected[0], CHAPTER_PRACTICE_LENGTH))
+    } else {
+      setQuestions(generateQuestions(selected, QUESTION_COUNT))
+    }
     setStep('quiz')
   }
 
@@ -47,13 +51,15 @@ export default function DailyQuest({ onDone, initialChapterId }) {
     // by checking which badges *would* now be satisfied based on updated totals.
     const updatedPoints = state.student.points + result.xpEarned + (result.correct === result.total && result.total > 0 ? 20 : 0)
     const updatedStreak = state.student.streak // streak logic handled in storage; badge diff best-effort
+    const mergedChaptersTried = Array.from(new Set([...state.student.chaptersTried, ...result.chapterIds]))
     const probableUnlocked = BADGES.filter((b) => !prevBadges.has(b.id) && b.condition({
       ...state.student,
       points: updatedPoints,
       streak: updatedStreak + 1,
       totalQuestsCompleted: state.student.totalQuestsCompleted + 1,
       hasPerfectScore: state.student.hasPerfectScore || (result.correct === result.total && result.total > 0),
-      chaptersTried: new Set([...state.student.chaptersTried, ...result.chapterIds]).size,
+      chaptersTried: mergedChaptersTried,
+      chaptersTriedCount: mergedChaptersTried.length,
       level: Math.floor(updatedPoints / 200) + 1,
     }))
     setNewBadges(probableUnlocked)
@@ -97,7 +103,7 @@ export default function DailyQuest({ onDone, initialChapterId }) {
             <p className="text-white/80 text-sm">
               {isAssignedToday
                 ? 'Your teacher picked these chapters for you today. Complete them all!'
-                : 'Pick 1 or more chapters to build your practice set (12 questions).'}
+                : `Pick a single chapter for a ${CHAPTER_PRACTICE_LENGTH}-question deep practice (simple to advanced), or a few chapters for a quick ${QUESTION_COUNT}-question mix.`}
             </p>
           </div>
         </div>
@@ -115,7 +121,7 @@ export default function DailyQuest({ onDone, initialChapterId }) {
         disabled={selected.length === 0}
         className="btn-chunky w-full mt-5 bg-candy-green text-white py-4 text-lg flex items-center justify-center gap-2 disabled:opacity-50"
       >
-        <Sparkles size={20} /> Start Quest ({QUESTION_COUNT} Questions)
+        <Sparkles size={20} /> Start Quest ({selected.length === 1 ? CHAPTER_PRACTICE_LENGTH : QUESTION_COUNT} Questions)
       </button>
     </div>
   )

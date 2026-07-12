@@ -128,7 +128,7 @@ export function recordQuestResult(state, result) {
     })
   })
 
-  s.badges = evaluateBadges({ ...s, chaptersTried: s.chaptersTried.length })
+  s.badges = evaluateBadges({ ...s, chaptersTriedCount: s.chaptersTried.length })
 
   const chapterTitles = chapterIds
     .map((id) => CHAPTERS.find((c) => c.id === id)?.short)

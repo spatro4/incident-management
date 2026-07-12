@@ -7,7 +7,18 @@ import {
   Shapes,
   BarChart3,
   Blocks,
+  Trophy,
 } from 'lucide-react'
+
+export const DIFFICULTIES = ['easy', 'medium', 'hard']
+
+export const DIFFICULTY_LABELS = {
+  easy: 'Simple',
+  medium: 'Medium',
+  hard: 'Advanced',
+}
+
+export const CHAPTER_PRACTICE_LENGTH = 25
 
 export const CHAPTERS = [
   {
@@ -100,6 +111,21 @@ export const CHAPTERS = [
       { id: 'multi-step', label: 'Multi-step problems' },
     ],
   },
+  {
+    id: 'olympiad',
+    order: 7,
+    title: 'Math Olympiad Prep',
+    short: 'Olympiad Prep',
+    icon: 'Trophy',
+    color: 'candy.yellow',
+    gradient: 'from-amber-400 to-yellow-500',
+    description: 'Challenge problems: patterns, logic puzzles, and competition-style questions.',
+    subtopics: [
+      { id: 'patterns-sequences', label: 'Number patterns & sequences' },
+      { id: 'logic-puzzles', label: 'Logic puzzles & digit riddles' },
+      { id: 'competition-problems', label: 'Competition-style word problems' },
+    ],
+  },
 ]
 
 export const CHAPTER_ICONS = {
@@ -109,6 +135,7 @@ export const CHAPTER_ICONS = {
   Shapes,
   BarChart3,
   Blocks,
+  Trophy,
 }
 
 export const getChapterById = (id) => CHAPTERS.find((c) => c.id === id)
@@ -120,8 +147,9 @@ export const BADGES = [
   { id: 'point-collector', label: 'Point Collector', description: 'Earn 500 Math Points', icon: '💎', condition: (s) => s.points >= 500 },
   { id: 'point-master', label: 'Math Master', description: 'Earn 2000 Math Points', icon: '👑', condition: (s) => s.points >= 2000 },
   { id: 'perfect-score', label: 'Perfectionist', description: 'Score 100% on a quest', icon: '🌟', condition: (s) => s.hasPerfectScore },
-  { id: 'all-rounder', label: 'All-Rounder', description: 'Practice every chapter at least once', icon: '🏆', condition: (s) => s.chaptersTried >= CHAPTERS.length },
+  { id: 'all-rounder', label: 'All-Rounder', description: 'Practice every chapter at least once', icon: '🏆', condition: (s) => s.chaptersTriedCount >= CHAPTERS.length },
   { id: 'level-5', label: 'Rising Star', description: 'Reach Level 5', icon: '🚀', condition: (s) => s.level >= 5 },
+  { id: 'olympiad-challenger', label: 'Olympiad Challenger', description: 'Try a Math Olympiad Prep quest', icon: '🥇', condition: (s) => (s.chaptersTried || []).includes('olympiad') },
 ]
 
 export const LEVEL_XP_STEP = 200 // XP required per level
