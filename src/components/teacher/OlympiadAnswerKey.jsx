@@ -1,12 +1,19 @@
 import { useState } from 'react'
 import { KeyRound, CheckCircle2 } from 'lucide-react'
-import { OLYMPIAD_CHAPTERS } from '../../data/curriculum'
+import { CHAPTERS } from '../../data/curriculum'
 import { OLYMPIAD_BANK } from '../../data/olympiadBank'
+import { ENGLISH_OLYMPIAD_BANK } from '../../data/englishOlympiadBank'
+
+const ALL_OLYMPIAD_CHAPTERS = CHAPTERS.filter((c) => c.level === 'olympiad')
+
+function bankFor(chapter) {
+  return chapter.subject === 'english' ? ENGLISH_OLYMPIAD_BANK : OLYMPIAD_BANK
+}
 
 export default function OlympiadAnswerKey() {
-  const [chapterId, setChapterId] = useState(OLYMPIAD_CHAPTERS[0].id)
-  const chapter = OLYMPIAD_CHAPTERS.find((c) => c.id === chapterId)
-  const questions = OLYMPIAD_BANK[chapter.sourceId] || []
+  const [chapterId, setChapterId] = useState(ALL_OLYMPIAD_CHAPTERS[0].id)
+  const chapter = ALL_OLYMPIAD_CHAPTERS.find((c) => c.id === chapterId)
+  const questions = bankFor(chapter)[chapter.sourceId] || []
 
   return (
     <div className="card-playful p-5">
@@ -23,17 +30,27 @@ export default function OlympiadAnswerKey() {
         onChange={(e) => setChapterId(e.target.value)}
         className="w-full sm:w-auto border-4 border-slate-200 focus:border-indigo-300 outline-none rounded-2xl px-4 py-2.5 font-bold text-slate-700 mb-4"
       >
-        {OLYMPIAD_CHAPTERS.map((c) => (
-          <option key={c.id} value={c.id}>
-            {c.title}
-          </option>
-        ))}
+        <optgroup label="Math Olympiad">
+          {ALL_OLYMPIAD_CHAPTERS.filter((c) => c.subject === 'math').map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.title}
+            </option>
+          ))}
+        </optgroup>
+        <optgroup label="English Olympiad">
+          {ALL_OLYMPIAD_CHAPTERS.filter((c) => c.subject === 'english').map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.title}
+            </option>
+          ))}
+        </optgroup>
       </select>
 
       <ol className="space-y-3 max-h-[32rem] overflow-y-auto pr-1">
         {questions.map((q, i) => (
           <li key={q.id} className="rounded-2xl bg-slate-50 border border-slate-100 p-4">
             <p className="text-xs font-bold text-slate-400 mb-1">Question {i + 1}</p>
+            {q.passage && <p className="text-xs text-slate-500 italic mb-2 leading-relaxed">{q.passage}</p>}
             <p className="font-bold text-slate-700 text-sm mb-2">{q.prompt}</p>
             {q.choices && (
               <div className="flex flex-wrap gap-2 mb-2">

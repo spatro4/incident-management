@@ -124,6 +124,11 @@ export default function QuizRunner({ questions, mode = 'quest', onComplete, onEx
       <ProgressBar value={progressPct} max={100} colorClass="bg-candy-purple" height="h-3" />
 
       <div className={`card-playful p-6 mt-4 ${answered && !isCorrect ? 'animate-shake-x' : 'animate-pop-in'}`}>
+        {question.passage && (
+          <div className="mb-4 p-4 rounded-2xl bg-slate-50 border-2 border-slate-100 text-slate-600 text-sm leading-relaxed">
+            {question.passage}
+          </div>
+        )}
         <p className="font-display text-lg sm:text-xl font-bold text-slate-800 leading-snug mb-4">{question.prompt}</p>
 
         {question.chartData && <div className="mb-4"><MiniChart chartData={question.chartData} /></div>}

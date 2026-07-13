@@ -1,10 +1,17 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Flame, Star, Trophy, Rocket, Megaphone, ChevronRight, GraduationCap } from 'lucide-react'
+import { Flame, Star, Trophy, Rocket, Megaphone, ChevronRight, GraduationCap, Calculator, BookOpen, Smile } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { CHAPTERS, CHAPTER_ICONS, BADGES, LEVELS } from '../../data/curriculum'
 import ProgressBar from '../common/ProgressBar'
 import Badge from '../common/Badge'
 import DailyQuest from './DailyQuest'
+import ComicsLibrary from '../comics/ComicsLibrary'
+
+const SUBJECT_TABS = [
+  { id: 'math', label: 'Math', icon: Calculator },
+  { id: 'english', label: 'English', icon: BookOpen },
+  { id: 'comics', label: 'Comics', icon: Smile },
+]
 
 function StatCard({ icon: Icon, label, value, colorClass }) {
   return (
@@ -24,6 +31,7 @@ export default function StudentDashboard() {
   const { state, levelInfo, isAssignedToday, homeTrigger } = useApp()
   const [view, setView] = useState('home') // 'home' | 'quest' | 'chapter'
   const [activeChapterId, setActiveChapterId] = useState(null)
+  const [subjectTab, setSubjectTab] = useState('math') // 'math' | 'english' | 'comics'
 
   // Clicking the header's Home button bumps homeTrigger — jump back to the
   // dashboard home view even if we're mid-quiz or on the chapter picker.
@@ -42,7 +50,7 @@ export default function StudentDashboard() {
   if (view === 'quest') {
     return (
       <div className="animate-pop-in">
-        <DailyQuest onDone={() => setView('home')} />
+        <DailyQuest onDone={() => setView('home')} subject={subjectTab === 'english' ? 'english' : 'math'} />
       </div>
     )
   }
@@ -62,7 +70,7 @@ export default function StudentDashboard() {
         <div className="absolute -right-6 -top-6 text-8xl opacity-20 select-none">🧮</div>
         <p className="text-white/80 font-bold text-sm">Welcome back,</p>
         <h1 className="font-display text-3xl font-extrabold">{state.student.name}! 👋</h1>
-        <p className="text-white/90 mt-1">Level {levelInfo.level} Math Explorer</p>
+        <p className="text-white/90 mt-1">Level {levelInfo.level} Explorer</p>
         <div className="mt-4 max-w-sm">
           <ProgressBar
             value={levelInfo.current}
@@ -91,26 +99,9 @@ export default function StudentDashboard() {
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <StatCard icon={Flame} label="Day Streak" value={state.student.streak} colorClass="bg-candy-orange" />
-        <StatCard icon={Star} label="Math Points" value={state.student.points} colorClass="bg-candy-yellow" />
+        <StatCard icon={Star} label="Points" value={state.student.points} colorClass="bg-candy-yellow" />
         <StatCard icon={Trophy} label="Quests Done" value={state.student.totalQuestsCompleted} colorClass="bg-candy-teal" />
       </div>
-
-      {/* Daily Quest CTA */}
-      <button
-        onClick={() => setView('quest')}
-        className="btn-chunky w-full bg-gradient-to-r from-emerald-400 to-teal-500 text-white p-5 flex items-center justify-between group"
-      >
-        <div className="flex items-center gap-3">
-          <div className="bg-white/25 p-3 rounded-2xl group-hover:animate-wiggle">
-            <Rocket size={26} />
-          </div>
-          <div className="text-left">
-            <p className="font-display text-lg font-extrabold">Start Daily Quest</p>
-            <p className="text-white/80 text-sm">12 fresh questions, picked just for you</p>
-          </div>
-        </div>
-        <ChevronRight size={24} />
-      </button>
 
       {/* Badges */}
       <div className="card-playful p-5">
@@ -122,23 +113,63 @@ export default function StudentDashboard() {
         </div>
       </div>
 
-      {/* Chapters grid, grouped by level */}
-      <div className="space-y-6">
+      {/* Subject tabs */}
+      <div className="flex bg-slate-100 rounded-2xl p-1.5 gap-1.5">
+        {SUBJECT_TABS.map((tab) => {
+          const Icon = tab.icon
+          const active = subjectTab === tab.id
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setSubjectTab(tab.id)}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-colors ${
+                active ? 'bg-white shadow-chunky-sm text-indigo-600' : 'text-slate-400'
+              }`}
+            >
+              <Icon size={16} /> {tab.label}
+            </button>
+          )
+        })}
+      </div>
+
+      {subjectTab === 'comics' ? (
+        <ComicsLibrary />
+      ) : (
+        <>
+          {/* Daily Quest CTA */}
+          <button
+            onClick={() => setView('quest')}
+            className="btn-chunky w-full bg-gradient-to-r from-emerald-400 to-teal-500 text-white p-5 flex items-center justify-between group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="bg-white/25 p-3 rounded-2xl group-hover:animate-wiggle">
+                <Rocket size={26} />
+              </div>
+              <div className="text-left">
+                <p className="font-display text-lg font-extrabold">Start Daily Quest</p>
+                <p className="text-white/80 text-sm">12 fresh {subjectTab === 'english' ? 'English' : 'Math'} questions, picked just for you</p>
+              </div>
+            </div>
+            <ChevronRight size={24} />
+          </button>
+
+          {/* Chapters grid, grouped by level */}
+          <div className="space-y-6">
         {Object.entries(LEVELS).map(([levelKey, levelLabel], idx) => {
-          const chaptersInLevel = CHAPTERS.filter((c) => c.level === levelKey)
+          const chaptersInLevel = CHAPTERS.filter((c) => c.level === levelKey && c.subject === subjectTab)
           if (chaptersInLevel.length === 0) return null
           const isOlympiadSection = levelKey === 'olympiad'
           return (
             <div key={levelKey}>
               {idx === 0 && (
                 <p className="text-xs font-bold uppercase tracking-wide text-indigo-400 mb-2 flex items-center gap-1.5">
-                  <GraduationCap size={14} /> Grade 4 Syllabus
+                  <GraduationCap size={14} /> Grade 4 {subjectTab === 'english' ? 'English' : 'Math'} Syllabus
                 </p>
               )}
               {isOlympiadSection ? (
                 <div className="rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border-2 border-amber-400/60 p-4 mb-3">
                   <h3 className="font-display font-extrabold text-amber-400 flex items-center gap-2 text-sm uppercase tracking-wide">
-                    <Trophy size={16} /> Olympiad Syllabus — Advanced Challenge Papers
+                    <Trophy size={16} /> {subjectTab === 'english' ? 'English' : 'Math'} Olympiad Syllabus — Advanced Challenge Papers
                   </h3>
                   <p className="text-slate-300 text-xs mt-1">
                     Fixed, competition-level papers — much harder than the regular syllabus above. Same 25 questions and answers every attempt.
@@ -194,7 +225,9 @@ export default function StudentDashboard() {
             </div>
           )
         })}
-      </div>
+          </div>
+        </>
+      )}
 
       {/* Recent activity */}
       {state.activityLog.length > 0 && (

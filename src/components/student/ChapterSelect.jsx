@@ -38,24 +38,24 @@ function ChapterCard({ chapter, isSelected, isLocked, isForced, onToggle }) {
   )
 }
 
-export default function ChapterSelect({ selected, onToggle, lockedChapters = [], forcedChapters = [] }) {
+export default function ChapterSelect({ selected, onToggle, lockedChapters = [], forcedChapters = [], subject = 'math' }) {
   return (
     <div className="space-y-5">
       {Object.entries(LEVELS).map(([levelKey, levelLabel], idx) => {
-        const chaptersInLevel = CHAPTERS.filter((c) => c.level === levelKey)
+        const chaptersInLevel = CHAPTERS.filter((c) => c.level === levelKey && c.subject === subject)
         if (chaptersInLevel.length === 0) return null
         const isOlympiadSection = levelKey === 'olympiad'
         return (
           <div key={levelKey}>
             {idx === 0 && (
               <p className="text-xs font-bold uppercase tracking-wide text-indigo-400 mb-2 flex items-center gap-1.5">
-                <GraduationCap size={14} /> Grade 4 Syllabus
+                <GraduationCap size={14} /> Grade 4 {subject === 'english' ? 'English' : 'Math'} Syllabus
               </p>
             )}
             {isOlympiadSection ? (
               <div className="rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border-2 border-amber-400/60 p-4 mb-3">
                 <p className="font-display font-extrabold text-amber-400 flex items-center gap-2 text-sm uppercase tracking-wide">
-                  <Trophy size={16} /> Olympiad Syllabus — Advanced Challenge Papers
+                  <Trophy size={16} /> {subject === 'english' ? 'English' : 'Math'} Olympiad Syllabus — Advanced Challenge Papers
                 </p>
                 <p className="text-slate-300 text-xs mt-1">
                   Fixed, competition-level papers — much harder than the regular syllabus above. Same 25 questions and answers every attempt.

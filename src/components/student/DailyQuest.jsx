@@ -2,8 +2,10 @@ import { useState } from 'react'
 import { Rocket, Sparkles, Trophy } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { generateQuestions, generateChapterPractice } from '../../utils/mathEngine'
+import { generateEnglishQuestions, generateEnglishChapterPractice } from '../../utils/englishEngine'
 import { CHAPTERS, BADGES, CHAPTER_PRACTICE_LENGTH, getChapterById } from '../../data/curriculum'
 import { OLYMPIAD_BANK } from '../../data/olympiadBank'
+import { ENGLISH_OLYMPIAD_BANK } from '../../data/englishOlympiadBank'
 import ChapterSelect from './ChapterSelect'
 import QuizRunner from './QuizRunner'
 import Results from './Results'
@@ -13,18 +15,26 @@ const QUESTION_COUNT = 12
 function loadQuestionsFor(chapterIds) {
   if (chapterIds.length === 1) {
     const chapter = getChapterById(chapterIds[0])
+    const isEnglish = chapter?.subject === 'english'
     if (chapter?.level === 'olympiad') {
-      return OLYMPIAD_BANK[chapter.sourceId] || []
+      const bank = isEnglish ? ENGLISH_OLYMPIAD_BANK : OLYMPIAD_BANK
+      return bank[chapter.sourceId] || []
     }
-    return generateChapterPractice(chapterIds[0], CHAPTER_PRACTICE_LENGTH)
+    return isEnglish
+      ? generateEnglishChapterPractice(chapterIds[0], CHAPTER_PRACTICE_LENGTH)
+      : generateChapterPractice(chapterIds[0], CHAPTER_PRACTICE_LENGTH)
   }
-  return generateQuestions(chapterIds, QUESTION_COUNT)
+  const firstChapter = getChapterById(chapterIds[0])
+  return firstChapter?.subject === 'english'
+    ? generateEnglishQuestions(chapterIds, QUESTION_COUNT)
+    : generateQuestions(chapterIds, QUESTION_COUNT)
 }
 
-export default function DailyQuest({ onDone, initialChapterId }) {
+export default function DailyQuest({ onDone, initialChapterId, subject = 'math' }) {
   const { state, isAssignedToday, submitQuestResult } = useApp()
   const forcedChapters = isAssignedToday ? state.assignments.assignedChapters : []
   const lockedChapters = state.assignments.lockedChapters || []
+  const subjectChapters = CHAPTERS.filter((c) => c.subject === subject)
 
   const [step, setStep] = useState(initialChapterId ? 'quiz' : 'select')
   const [selected, setSelected] = useState(
@@ -32,7 +42,7 @@ export default function DailyQuest({ onDone, initialChapterId }) {
       ? [initialChapterId]
       : forcedChapters.length > 0
         ? forcedChapters
-        : CHAPTERS.slice(0, 2).map((c) => c.id)
+        : subjectChapters.slice(0, 2).map((c) => c.id)
   )
   const [questions, setQuestions] = useState(() => (initialChapterId ? loadQuestionsFor([initialChapterId]) : []))
   const [summary, setSummary] = useState(null)
@@ -139,6 +149,7 @@ export default function DailyQuest({ onDone, initialChapterId }) {
         onToggle={toggleChapter}
         lockedChapters={lockedChapters}
         forcedChapters={forcedChapters}
+        subject={subject}
       />
 
       <button

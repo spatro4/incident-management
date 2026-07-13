@@ -24,7 +24,23 @@ import {
   Scale,
   CalendarClock,
   Coins,
+  Tag,
+  Activity,
+  Palette,
+  ArrowLeftRight,
+  AlignLeft,
+  Quote,
+  SpellCheck,
+  BookOpen,
+  Feather,
+  Equal,
+  Type,
+  Link,
+  MessageCircle,
+  GitCompareArrows,
+  Ear,
 } from 'lucide-react'
+import { ENGLISH_CHAPTERS, ENGLISH_OLYMPIAD_CHAPTERS } from './englishCurriculum'
 
 export const DIFFICULTIES = ['easy', 'medium', 'hard']
 
@@ -232,6 +248,7 @@ export const OLYMPIAD_CHAPTERS = [
 ].map((c, i) => ({
   id: `olympiad-${c.sourceId}`,
   sourceId: c.sourceId,
+  subject: 'math',
   level: 'olympiad',
   order: 100 + i,
   title: c.title,
@@ -421,9 +438,9 @@ export const CHAPTERS = [
       { id: 'multi-step', label: 'Multi-step problems' },
     ],
   },
-]
+].map((c) => ({ ...c, subject: 'math' }))
 
-CHAPTERS.push(...OLYMPIAD_CHAPTERS)
+CHAPTERS.push(...OLYMPIAD_CHAPTERS, ...ENGLISH_CHAPTERS, ...ENGLISH_OLYMPIAD_CHAPTERS)
 
 export const CHAPTER_ICONS = {
   Hash,
@@ -448,6 +465,21 @@ export const CHAPTER_ICONS = {
   Scale,
   CalendarClock,
   Coins,
+  Tag,
+  Activity,
+  Palette,
+  ArrowLeftRight,
+  AlignLeft,
+  Quote,
+  SpellCheck,
+  BookOpen,
+  Feather,
+  Equal,
+  Type,
+  Link,
+  MessageCircle,
+  GitCompareArrows,
+  Ear,
 }
 
 export const getChapterById = (id) => CHAPTERS.find((c) => c.id === id)
@@ -465,7 +497,7 @@ export const BADGES = [
   { id: 'perfect-score', label: 'Perfectionist', description: 'Score 100% on a quest', icon: '🌟', condition: (s) => s.hasPerfectScore },
   { id: 'all-rounder', label: 'All-Rounder', description: 'Practice every Grade 4 syllabus chapter at least once', icon: '🏆', condition: (s) => s.chaptersTriedCount >= CORE_SYLLABUS_CHAPTER_COUNT },
   { id: 'level-5', label: 'Rising Star', description: 'Reach Level 5', icon: '🚀', condition: (s) => s.level >= 5 },
-  { id: 'olympiad-challenger', label: 'Olympiad Challenger', description: 'Attempt an Olympiad Syllabus challenge paper', icon: '🥇', condition: (s) => (s.chaptersTried || []).some((id) => id.startsWith('olympiad-')) },
+  { id: 'olympiad-challenger', label: 'Olympiad Challenger', description: 'Attempt an Olympiad Syllabus challenge paper', icon: '🥇', condition: (s) => (s.chaptersTried || []).some((id) => id.includes('olympiad-')) },
 ]
 
 export const LEVEL_XP_STEP = 200 // XP required per level
