@@ -1,0 +1,38 @@
+{
+  "family": "sap-incident-mcp-server",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::<ACCOUNT_ID>:role/sap-mcp-execution-role",
+  "taskRoleArn": "arn:aws:iam::<ACCOUNT_ID>:role/sap-mcp-task-role",
+  "containerDefinitions": [
+    {
+      "name": "sap-incident-mcp-server",
+      "image": "<ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/sap-incident-mcp-server:latest",
+      "portMappings": [{ "containerPort": 8080, "protocol": "tcp" }],
+      "environment": [
+        { "name": "MCP_TRANSPORT", "value": "http" },
+        { "name": "CLOUD_PROVIDER", "value": "aws" },
+        { "name": "PORT", "value": "8080" }
+      ],
+      "secrets": [
+        { "name": "MCP_BEARER_TOKEN", "valueFrom": "arn:aws:secretsmanager:<REGION>:<ACCOUNT_ID>:secret:mcp/bearer-token" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/sap-incident-mcp-server",
+          "awslogs-region": "<REGION>",
+          "awslogs-stream-prefix": "sap-mcp"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "node -e \"require('http').get('http://localhost:8080/healthz', r => process.exit(r.statusCode===200?0:1))\""],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3
+      }
+    }
+  ]
+}

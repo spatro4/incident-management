@@ -1,0 +1,25 @@
+# Cloud Foundry deployment manifest for SAP BTP.
+# Deploy with: cf push -f deploy/btp/manifest.yml
+---
+applications:
+  - name: sap-incident-mcp-server
+    path: ../../
+    buildpacks:
+      - nodejs_buildpack
+    command: npm run build && npm start
+    memory: 512M
+    disk_quota: 512M
+    instances: 1
+    env:
+      MCP_TRANSPORT: http
+      CLOUD_PROVIDER: btp
+      NODE_ENV: production
+    services:
+      - sap-incident-mcp-xsuaa # XSUAA instance (see xs-security.json)
+      - sap-incident-mcp-destination # Destination service instance
+      - sap-incident-mcp-connectivity # Connectivity service instance (needed for on-prem RFC via Cloud Connector)
+      # Bind one user-provided service per external secret set, e.g.:
+      # cf create-user-provided-service successfactors -p '{"clientSecret":"..."}'
+      - successfactors
+      - servicenow
+      - slack

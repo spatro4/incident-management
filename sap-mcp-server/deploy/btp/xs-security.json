@@ -1,0 +1,17 @@
+{
+  "xsappname": "sap-incident-mcp-server",
+  "tenant-mode": "dedicated",
+  "scopes": [
+    { "name": "$XSAPPNAME.Invoke", "description": "Allowed to call MCP server tools" }
+  ],
+  "role-templates": [
+    {
+      "name": "MCPInvoker",
+      "description": "Can invoke the SAP incident MCP server",
+      "scope-references": ["$XSAPPNAME.Invoke"]
+    }
+  ],
+  "oauth2-configuration": {
+    "credential-types": ["binding-secret", "x509"]
+  }
+}
