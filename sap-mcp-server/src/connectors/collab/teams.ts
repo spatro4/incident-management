@@ -5,6 +5,7 @@ import type { Connector } from "../../types.js";
 /** Uses a Teams Incoming Webhook (or Power Automate workflow) URL per channel - simplest option, no Graph app registration needed. */
 export const teamsConnector: Connector = {
   id: "collab-teams",
+  group: "collab",
   register(server: McpServer) {
     server.tool(
       "teams_post_message",

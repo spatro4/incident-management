@@ -1,4 +1,4 @@
-# Cloud Foundry deployment manifest for SAP BTP.
+# Cloud Foundry deployment manifest for SAP BTP - org-wide production settings.
 # Deploy with: cf push -f deploy/btp/manifest.yml
 ---
 applications:
@@ -9,15 +9,20 @@ applications:
     command: npm run build && npm start
     memory: 512M
     disk_quota: 512M
-    instances: 1
+    instances: 2 # 2+ for HA - CF's router load-balances across all instances of the same app
+    health-check-type: http
+    health-check-http-endpoint: /healthz
+    routes:
+      - route: sap-incident-mcp.<your-custom-domain-or-cfapps-subdomain>
     env:
       MCP_TRANSPORT: http
       CLOUD_PROVIDER: btp
       NODE_ENV: production
     services:
-      - sap-incident-mcp-xsuaa # XSUAA instance (see xs-security.json)
+      - sap-incident-mcp-xsuaa # XSUAA instance (see xs-security.json) - required for org-wide per-user auth
       - sap-incident-mcp-destination # Destination service instance
       - sap-incident-mcp-connectivity # Connectivity service instance (needed for on-prem RFC via Cloud Connector)
+      - sap-incident-mcp-logging # Application Logging Service instance (see README "Monitoring")
       # Bind one user-provided service per external secret set, e.g.:
       # cf create-user-provided-service successfactors -p '{"clientSecret":"..."}'
       - successfactors

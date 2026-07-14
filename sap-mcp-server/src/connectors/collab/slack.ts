@@ -13,6 +13,7 @@ async function slackBotToken() {
 
 export const slackConnector: Connector = {
   id: "collab-slack",
+  group: "collab",
   register(server: McpServer) {
     server.tool(
       "slack_post_message",

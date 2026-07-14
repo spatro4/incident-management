@@ -26,6 +26,7 @@ async function jiraCall(path: string, init?: RequestInit) {
 
 export const jiraConnector: Connector = {
   id: "itsm-jira",
+  group: "itsm",
   register(server: McpServer) {
     server.tool(
       "jira_create_issue",

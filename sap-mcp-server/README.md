@@ -138,11 +138,94 @@ npx @modelcontextprotocol/inspector node dist/server.js
 
 8. **Auth for callers**: bind an XSUAA-issued OAuth2 token to every request (`Authorization:
    Bearer <token>`), obtained via client-credentials grant against your XSUAA service key. Claude
-   Code will send whatever bearer token you configure in its MCP server settings (see §5).
+   Code will send whatever bearer token you configure in its MCP server settings (see §6).
 
 ---
 
-## 4. Deploying on AWS (ECS Fargate)
+## 4. Deploying for your entire organization on Cloud Foundry
+
+Section 3 gets one instance running. Rolling it out org-wide means: it survives an instance
+crash, more than one team can use it without everyone sharing a single all-powerful secret, and
+someone other than you can keep it running. Here's what changes.
+
+### 4.1 Org/space layout
+
+Don't drop this into a personal dev space. Pick (or create) a space your platform/ops team
+actually owns, e.g. `cf create-space mcp-prod -o <your-org>`, and grant `SpaceDeveloper` to the
+people who'll operate it (`cf set-space-role <user> <org> mcp-prod SpaceDeveloper`). Confirm your
+subaccount has enough Cloud Foundry quota (memory/routes) entitled for 2+ instances — check under
+BTP cockpit → Entitlements.
+
+### 4.2 High availability
+
+Already reflected in `deploy/btp/manifest.yml`: `instances: 2`, plus
+`health-check-type: http` / `health-check-http-endpoint: /healthz` so Cloud Foundry restarts an
+instance that stops responding instead of leaving it half-dead. Cloud Foundry's Gorouter
+automatically load-balances across all instances of the app — no separate load balancer to set
+up. Bump `instances:` further if usage grows; each is independent and stateless (a fresh
+`McpServer` is built per HTTP request, see `src/server.ts`), so scaling out is just changing that
+number and re-pushing.
+
+### 4.3 Access control per team (not one shared secret for everyone)
+
+A single static bearer token for the whole org means anyone who has it can call every connector,
+and you can't tell which team member did what. `src/auth/xsuaa.ts` and the updated
+`deploy/btp/xs-security.json` replace that with real per-caller scopes:
+
+- `xs-security.json` now defines scopes `Invoke.Sap`, `Invoke.Itsm`, `Invoke.Collab`,
+  `Invoke.Generic`, and role templates `SapTeam` (SAP tools only), `OpsTeam` (ITSM + collab only),
+  and `AllTeams` (everything).
+- In BTP cockpit → Security → **Role Collections**, create one Role Collection per group (e.g.
+  "MCP - SAP Basis", "MCP - Incident Response") and add the matching role template to each.
+- Under Security → **Trust Configuration**, map your corporate IdP's groups (synced via SAP Cloud
+  Identity Services / SCIM, or your existing SAML/OIDC group claim) to those Role Collections, so
+  whoever your IT already puts in "SAP-Basis-Team" in Active Directory automatically gets the
+  right MCP scopes — no manual per-user provisioning.
+- At request time, `xsuaaAuthMiddleware` (in `src/auth/xsuaa.ts`) verifies the caller's JWT against
+  XSUAA's public keys and reads their granted scopes; `allowedGroupsFromScopes` turns those into
+  the set of connector groups `registerAllConnectors` will actually register for that request. A
+  caller with only `OpsTeam` scopes literally never sees the `sap_call_bapi` tool exist.
+
+### 4.4 Getting tokens to your users
+
+This is the part every org has to decide for itself, so pick based on how much setup you want now:
+
+- **Per-team tokens (simplest, works today):** create one XSUAA service key per team —
+  `cf create-service-key sap-incident-mcp-xsuaa sap-team-key`, then attach the `SapTeam` role
+  collection to that key's technical client. `cf service-key sap-incident-mcp-xsuaa sap-team-key`
+  gives you a `clientid`/`clientsecret` that team can exchange for a bearer token
+  (`grant_type=client_credentials` against `<xsuaa-url>/oauth/token`) and put in their Claude Code
+  MCP config. Everyone on that team shares one token, scoped to only what their team is allowed —
+  a big step up from one org-wide secret, with no extra infrastructure.
+- **Per-individual SSO login (stronger, more setup):** XSUAA also supports the `authorization_code`
+  grant (enabled in `xs-security.json`), so each employee can get their own personal token via a
+  one-time browser login through your corporate IdP. Whether this can be fully automatic depends
+  on whether your Claude Code enterprise build supports the MCP remote-server OAuth flow (check
+  with your Claude Code admin/current docs) — if not, the usual pattern is a small internal
+  "approuter" page employees visit once to complete the login and copy their token into
+  `.mcp.json`. This gives per-user audit trails at the cost of standing up that login page.
+
+Start with per-team tokens; move to per-individual SSO later if audit/compliance needs it.
+
+### 4.5 Monitoring
+
+Bind the **Application Logging Service** (`cf create-service application-logs lite
+sap-incident-mcp-logging`, already referenced in `manifest.yml`) to get centralized logs across
+all instances — `console.error` calls in this codebase (connector registration, fatal errors) flow
+straight into it. For alerting on the app being down, use BTP's Alert Notification service or
+point an external uptime check at `/healthz`.
+
+### 4.6 Keeping it updated without someone SSHing in
+
+`.github/workflows/sap-mcp-server-deploy.yml` runs `cf push --strategy rolling` automatically on
+every merge to `main` that touches `sap-mcp-server/`, using CF credentials stored as GitHub Actions
+secrets (`CF_API`, `CF_ORG`, `CF_SPACE`, `CF_USERNAME`, `CF_PASSWORD`). Rolling deploy replaces
+instances one at a time so the org-wide URL stays up during a release. Point those secrets at a
+dedicated CI/CD service account, not a personal login.
+
+---
+
+## 5. Deploying on AWS (ECS Fargate)
 
 1. **Prerequisites**: an AWS account, `aws` CLI configured, an ECR repository, a VPC with at
    least one private subnet + NAT (or a public subnet if you're fine with a public ALB).
@@ -185,7 +268,7 @@ npx @modelcontextprotocol/inspector node dist/server.js
 
 ---
 
-## 5. Connecting Claude Code (enterprise) to this server
+## 6. Connecting Claude Code (enterprise) to this server
 
 Claude Code enterprise admins typically manage which MCP servers are allowed via a
 managed `settings.json` policy (`mcpServers` allow/deny list) pushed to all users — check with
@@ -220,7 +303,7 @@ Once connected, tools like `sap_successfactors_get_employee`, `servicenow_create
 
 ---
 
-## 6. Setting up each non-SAP system
+## 7. Setting up each non-SAP system
 
 - **Slack**: create an app at api.slack.com/apps, add the `chat:write` bot scope, install to your
   workspace, copy the Bot User OAuth Token into `SLACK_BOT_TOKEN`.
@@ -238,7 +321,7 @@ Once connected, tools like `sap_successfactors_get_employee`, `servicenow_create
 
 ---
 
-## 7. Security notes
+## 8. Security notes
 
 - Every connector reads secrets through `src/auth/secrets.ts`, never hardcoded — extend that
   file if you add a secret backend beyond BTP/AWS/env.

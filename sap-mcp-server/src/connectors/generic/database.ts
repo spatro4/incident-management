@@ -34,6 +34,7 @@ function assertReadOnly(sql: string) {
 
 export const databaseConnector: Connector = {
   id: "generic-database",
+  group: "generic",
   register(server: McpServer) {
     server.tool(
       "database_query",

@@ -29,6 +29,7 @@ async function snCall(path: string, init?: RequestInit) {
 
 export const serviceNowConnector: Connector = {
   id: "itsm-servicenow",
+  group: "itsm",
   register(server: McpServer) {
     server.tool(
       "servicenow_create_incident",

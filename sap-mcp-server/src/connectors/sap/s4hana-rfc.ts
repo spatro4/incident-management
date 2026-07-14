@@ -64,6 +64,7 @@ async function getRfcConnectionParams() {
 
 export const s4hanaRfcConnector: Connector = {
   id: "sap-s4hana-rfc",
+  group: "sap",
   register(server: McpServer) {
     server.tool(
       "sap_call_bapi",

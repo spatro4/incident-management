@@ -20,6 +20,7 @@ async function getTransporter() {
 
 export const emailConnector: Connector = {
   id: "collab-email",
+  group: "collab",
   register(server: McpServer) {
     server.tool(
       "email_send",

@@ -29,6 +29,7 @@ async function aribaCall(path: string) {
 
 export const aribaConnector: Connector = {
   id: "sap-ariba",
+  group: "sap",
   register(server: McpServer) {
     server.tool(
       "sap_ariba_get_purchase_order",

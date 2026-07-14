@@ -2,16 +2,35 @@
   "xsappname": "sap-incident-mcp-server",
   "tenant-mode": "dedicated",
   "scopes": [
-    { "name": "$XSAPPNAME.Invoke", "description": "Allowed to call MCP server tools" }
+    { "name": "$XSAPPNAME.Invoke.Sap", "description": "Call SAP tools (SuccessFactors, Ariba, S/4HANA RFC/BAPI)" },
+    { "name": "$XSAPPNAME.Invoke.Itsm", "description": "Call ITSM tools (ServiceNow, Jira, PagerDuty)" },
+    { "name": "$XSAPPNAME.Invoke.Collab", "description": "Call collaboration tools (Slack, Teams, email)" },
+    { "name": "$XSAPPNAME.Invoke.Generic", "description": "Call generic DB/REST tools" }
   ],
   "role-templates": [
     {
-      "name": "MCPInvoker",
-      "description": "Can invoke the SAP incident MCP server",
-      "scope-references": ["$XSAPPNAME.Invoke"]
+      "name": "SapTeam",
+      "description": "SAP Basis / functional team - SAP systems only",
+      "scope-references": ["$XSAPPNAME.Invoke.Sap"]
+    },
+    {
+      "name": "OpsTeam",
+      "description": "On-call / incident-response team - ITSM and collaboration tools only",
+      "scope-references": ["$XSAPPNAME.Invoke.Itsm", "$XSAPPNAME.Invoke.Collab"]
+    },
+    {
+      "name": "AllTeams",
+      "description": "Full access across every connector group",
+      "scope-references": [
+        "$XSAPPNAME.Invoke.Sap",
+        "$XSAPPNAME.Invoke.Itsm",
+        "$XSAPPNAME.Invoke.Collab",
+        "$XSAPPNAME.Invoke.Generic"
+      ]
     }
   ],
   "oauth2-configuration": {
+    "grant-types": ["authorization_code", "client_credentials", "refresh_token"],
     "credential-types": ["binding-secret", "x509"]
   }
 }

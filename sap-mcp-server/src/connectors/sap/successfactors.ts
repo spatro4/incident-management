@@ -29,6 +29,7 @@ async function sfCall(path: string, init?: RequestInit) {
 
 export const successFactorsConnector: Connector = {
   id: "sap-successfactors",
+  group: "sap",
   register(server: McpServer) {
     server.tool(
       "sap_successfactors_get_employee",

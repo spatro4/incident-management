@@ -17,6 +17,7 @@ function assertAllowedHost(url: string) {
 
 export const genericRestConnector: Connector = {
   id: "generic-rest",
+  group: "generic",
   register(server: McpServer) {
     server.tool(
       "rest_call",

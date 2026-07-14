@@ -13,6 +13,7 @@ async function pagerDutyApiKey() {
 
 export const pagerDutyConnector: Connector = {
   id: "itsm-pagerduty",
+  group: "itsm",
   register(server: McpServer) {
     server.tool(
       "pagerduty_trigger_incident",
