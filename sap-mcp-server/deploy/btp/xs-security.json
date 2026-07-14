@@ -3,6 +3,7 @@
   "tenant-mode": "dedicated",
   "scopes": [
     { "name": "$XSAPPNAME.Invoke.Sap", "description": "Call SAP tools (SuccessFactors, Ariba, S/4HANA RFC/BAPI)" },
+    { "name": "$XSAPPNAME.Invoke.Mes", "description": "Call MES/digital-thread tools (Solumina, eQube)" },
     { "name": "$XSAPPNAME.Invoke.Itsm", "description": "Call ITSM tools (ServiceNow, Jira, PagerDuty)" },
     { "name": "$XSAPPNAME.Invoke.Collab", "description": "Call collaboration tools (Slack, Teams, email)" },
     { "name": "$XSAPPNAME.Invoke.Generic", "description": "Call generic DB/REST tools" }
@@ -14,6 +15,11 @@
       "scope-references": ["$XSAPPNAME.Invoke.Sap"]
     },
     {
+      "name": "ShopFloorTeam",
+      "description": "Manufacturing/quality team - Solumina and eQube only",
+      "scope-references": ["$XSAPPNAME.Invoke.Mes"]
+    },
+    {
       "name": "OpsTeam",
       "description": "On-call / incident-response team - ITSM and collaboration tools only",
       "scope-references": ["$XSAPPNAME.Invoke.Itsm", "$XSAPPNAME.Invoke.Collab"]
@@ -23,6 +29,7 @@
       "description": "Full access across every connector group",
       "scope-references": [
         "$XSAPPNAME.Invoke.Sap",
+        "$XSAPPNAME.Invoke.Mes",
         "$XSAPPNAME.Invoke.Itsm",
         "$XSAPPNAME.Invoke.Collab",
         "$XSAPPNAME.Invoke.Generic"

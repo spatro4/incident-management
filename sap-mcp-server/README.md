@@ -3,6 +3,7 @@
 An MCP server that gives Claude Code (and any other MCP client) tools to read/write across:
 
 - **SAP**: S/4HANA on-premise (RFC/BAPI, via Cloud Connector), SuccessFactors, Ariba
+- **MES / digital thread**: iBase-t Solumina, iBase-t eQube
 - **ITSM**: ServiceNow, Jira, PagerDuty
 - **Collaboration**: Slack, Microsoft Teams, email
 - **Generic**: any Postgres-compatible DB, any allow-listed internal REST API
@@ -17,6 +18,7 @@ src/
   auth/secrets.ts       resolves secrets from BTP VCAP_SERVICES, AWS Secrets Manager, or env vars
   connectors/
     sap/                successfactors.ts, ariba.ts, s4hana-rfc.ts
+    mes/                solumina.ts, eqube.ts
     itsm/               servicenow.ts, jira.ts, pagerduty.ts
     collab/             slack.ts, teams.ts, email.ts
     generic/            database.ts, rest.ts
@@ -172,11 +174,12 @@ A single static bearer token for the whole org means anyone who has it can call 
 and you can't tell which team member did what. `src/auth/xsuaa.ts` and the updated
 `deploy/btp/xs-security.json` replace that with real per-caller scopes:
 
-- `xs-security.json` now defines scopes `Invoke.Sap`, `Invoke.Itsm`, `Invoke.Collab`,
-  `Invoke.Generic`, and role templates `SapTeam` (SAP tools only), `OpsTeam` (ITSM + collab only),
-  and `AllTeams` (everything).
+- `xs-security.json` now defines scopes `Invoke.Sap`, `Invoke.Mes`, `Invoke.Itsm`, `Invoke.Collab`,
+  `Invoke.Generic`, and role templates `SapTeam` (SAP only), `ShopFloorTeam` (Solumina/eQube only),
+  `OpsTeam` (ITSM + collab only), and `AllTeams` (everything).
 - In BTP cockpit → Security → **Role Collections**, create one Role Collection per group (e.g.
-  "MCP - SAP Basis", "MCP - Incident Response") and add the matching role template to each.
+  "MCP - SAP Basis", "MCP - Manufacturing Quality", "MCP - Incident Response") and add the matching
+  role template to each.
 - Under Security → **Trust Configuration**, map your corporate IdP's groups (synced via SAP Cloud
   Identity Services / SCIM, or your existing SAML/OIDC group claim) to those Role Collections, so
   whoever your IT already puts in "SAP-Basis-Team" in Active Directory automatically gets the
@@ -305,6 +308,11 @@ Once connected, tools like `sap_successfactors_get_employee`, `servicenow_create
 
 ## 7. Setting up each non-SAP system
 
+- **Solumina / eQube**: unlike the other connectors here, these two don't have a single
+  standardized public API — the REST paths in `src/connectors/mes/solumina.ts` and `eqube.ts` are
+  a starting shape, not a guarantee. Get the actual API/WSDL reference for your specific Solumina
+  version and eQube-DPM configuration from your iBase-t implementation team before relying on
+  these in production, and adjust the `soluminaCall`/`equbeCall` paths to match.
 - **Slack**: create an app at api.slack.com/apps, add the `chat:write` bot scope, install to your
   workspace, copy the Bot User OAuth Token into `SLACK_BOT_TOKEN`.
 - **Microsoft Teams**: in the target channel, add an "Incoming Webhook" connector and copy the

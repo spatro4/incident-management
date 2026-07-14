@@ -3,6 +3,8 @@ import type { Connector } from "./types.js";
 import { successFactorsConnector } from "./connectors/sap/successfactors.js";
 import { aribaConnector } from "./connectors/sap/ariba.js";
 import { s4hanaRfcConnector } from "./connectors/sap/s4hana-rfc.js";
+import { soluminaConnector } from "./connectors/mes/solumina.js";
+import { equbeConnector } from "./connectors/mes/eqube.js";
 import { serviceNowConnector } from "./connectors/itsm/servicenow.js";
 import { jiraConnector } from "./connectors/itsm/jira.js";
 import { pagerDutyConnector } from "./connectors/itsm/pagerduty.js";
@@ -16,6 +18,8 @@ const allConnectors: Connector[] = [
   successFactorsConnector,
   aribaConnector,
   s4hanaRfcConnector,
+  soluminaConnector,
+  equbeConnector,
   serviceNowConnector,
   jiraConnector,
   pagerDutyConnector,
